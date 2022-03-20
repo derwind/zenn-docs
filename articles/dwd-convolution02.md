@@ -108,7 +108,7 @@ $$
 
 $$
 \begin{align*}
-(K_n^\prime f)(x) = \frac{1}{n} \int_{|x-y| \leq r} \!\!\!\!\!\!\!\!\! \tilde{k}(x-y)g\left(\frac{y}{n}\right) dy
+(K_n^\prime f)(x) = \frac{1}{n} \int_{|x-y| \leq r} \!\!\!\!\!\!\!\!\! \tilde{k}(x-y)f\left(\frac{y}{n}\right) dy
 \tag{2}
 \end{align*}
 $$
