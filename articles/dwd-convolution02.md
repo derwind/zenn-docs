@@ -22,7 +22,6 @@ published: true
 $$
 \begin{align*}
 (k * f)(x) = \int_{|y-x| \leq r} \!\!\!\!\!\!\!\!\! k(x-y) f(y) dy
-\tag{1}
 \end{align*}
 $$
 
