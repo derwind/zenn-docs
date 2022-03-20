@@ -3,7 +3,7 @@ title: "ニューラルネットの畳み込み層 (1)"
 emoji: "⛓"
 type: "tech"
 topics: ["機械学習", "ポエム", "Python"]
-published: false
+published: true
 ---
 
 # 目的
