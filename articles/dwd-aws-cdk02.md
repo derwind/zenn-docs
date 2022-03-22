@@ -8,7 +8,7 @@ published: true
 
 # 目的
 
-[前回](/articles/dwd-aws-cdk01)に引き続き、LocalStack と CDK で遊んでみる。
+[前回](/derwind/articles/dwd-aws-cdk01)に引き続き、LocalStack と CDK で遊んでみる。
 
 > - Step Functions + 複数個の Lambda
 
@@ -263,7 +263,7 @@ export class StepFunctionsTestStack extends Stack {
 
 # デプロイ
 
-[bootstrap](/articles/dwd-aws-cdk01#bootstrap) が完了している前提のもとでは、普通に
+[bootstrap](/derwind/articles/dwd-aws-cdk01#bootstrap) が完了している前提のもとでは、普通に
 
 ```sh
 $ cdklocal deploy
