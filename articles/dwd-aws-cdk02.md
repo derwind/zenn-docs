@@ -3,7 +3,7 @@ title: "LocalStack と CDK で遊んでみる (2)"
 emoji: "🌨"
 type: "tech"
 topics: ["AWS", "ポエム", "TypeScript"]
-published: false
+published: true
 ---
 
 # 目的
