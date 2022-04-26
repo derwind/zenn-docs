@@ -62,7 +62,8 @@ $$
 \left(\frac{1}{s_1} A \psi_1\quad \frac{1}{s_2} A \psi_2\right) \begin{pmatrix}
 s_1 \bar{\psi}_1^T \\
 s_2 \bar{\psi}_2^T
-\end{pmatrix} \psi = A((\bar{\psi}_1^T \psi_1)\psi_1 + (\bar{\psi}_2^T \psi_2)\psi_2) = A \psi
+\end{pmatrix} \psi &= A((\bar{\psi}_1^T \psi_1)\psi_1 + (\bar{\psi}_2^T \psi_2)\psi_2) \\
+&= A \psi
 \tag{2}
 \end{align*}
 $$
