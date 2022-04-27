@@ -3,7 +3,7 @@ title: "特異値分解のちょっと格好いい姿を眺めてみる"
 emoji: "📈"
 type: "tech"
 topics: ["math", "ポエム"]
-published: false
+published: true
 ---
 
 # 目的
