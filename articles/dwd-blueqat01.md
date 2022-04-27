@@ -8,7 +8,7 @@ published: false
 
 # 目的
 
-「量子コンピュータ」を勉強するにあたって流石に Qiskit べったりで勉強するのも宜しくないので、ディープラーニングを勉強する時に TensorFlow と PyTorch で勉強したように[^1]、blueqat SDK も使ってみたい。
+「量子コンピュータ」を勉強するにあたって流石に Qiskit べったりで勉強するのも宜しくないので、ディープラーニングを勉強する時に TensorFlow と PyTorch で比較しながら勉強したように[^1]、blueqat SDK も使ってみたい。
 
 [^1]: 結局は PyTorch ばかり使っている。
 
