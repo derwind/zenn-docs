@@ -22,7 +22,7 @@ https://github.com/Blueqat/Blueqat によると
 
 # 題材
 
-Qiskit texobook の [Introduction](https://qiskit.org/textbook/ch-states/introduction.html) の量子回路を題材にする。X ゲートと CX ゲートと Toffoli (CCX) ゲートがあって良さそうだったので。
+Qiskit textbook の [Introduction](https://qiskit.org/textbook/ch-states/introduction.html) の量子回路を題材にする。X ゲートと CX ゲートと Toffoli (CCX) ゲートがあって良さそうだったので。
 
 # 実装例
 
