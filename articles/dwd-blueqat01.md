@@ -3,7 +3,7 @@ title: "Blueqat で遊んでみる (1)"
 emoji: "🐱"
 type: "tech"
 topics: ["blueqat", "Qiskit", "量子コンピュータ", "ポエム", "Python"]
-published: false
+published: true
 ---
 
 # 目的
