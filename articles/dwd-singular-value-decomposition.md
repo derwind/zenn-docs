@@ -62,13 +62,13 @@ $$
 \left(\frac{1}{s_1} A \psi_1\quad \frac{1}{s_2} A \psi_2\right) \begin{pmatrix}
 s_1 \bar{\psi}_1^T \\
 s_2 \bar{\psi}_2^T
-\end{pmatrix} \psi &= A((\bar{\psi}_1^T \psi_1)\psi_1 + (\bar{\psi}_2^T \psi_2)\psi_2) \\
+\end{pmatrix} \psi &= A((\bar{\psi}_1^T \psi)\psi_1 + (\bar{\psi}_2^T \psi)\psi_2) \\
 &= A \psi
 \tag{2}
 \end{align*}
 $$
 
-と計算されることから分かる。ここで、$\psi = (\bar{\psi}_1^T \psi_1)\psi_1 + (\bar{\psi}_2^T \psi_2)\psi_2$ という $\psi$ の正規直交基底による展開を用いた。
+と計算されることから分かる。ここで、$\psi = (\bar{\psi}_1^T \psi)\psi_1 + (\bar{\psi}_2^T \psi)\psi_2$ という $\psi$ の正規直交基底による展開を用いた。
 
 最後に、$\Sigma = \begin{pmatrix} s_1 & 0 \\ 0 & s_2 \end{pmatrix}$ と置くことで、(1) を得る。
 
