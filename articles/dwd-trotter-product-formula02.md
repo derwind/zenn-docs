@@ -150,4 +150,4 @@ $$
 
 # 文献
 
-[NC2] M. A. Nielsen, I. L. Chunang, 量子コンピュータと量子通信II, p.8, オーム社, 2005
+[NC2] M. A. Nielsen, I. L. Chuang, 量子コンピュータと量子通信II, p.8, オーム社, 2005
