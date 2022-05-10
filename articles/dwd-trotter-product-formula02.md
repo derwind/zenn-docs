@@ -3,7 +3,7 @@ title: "Trotter の積公式で遊んでみる"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "ポエム"]
-published: false
+published: true
 ---
 
 # 目的
