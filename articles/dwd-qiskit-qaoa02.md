@@ -193,7 +193,7 @@ $$
 
 $$
 \begin{align*}
-\braket{\psi(\beta, \gamma) | H_P |\psi(\beta, \gamma)} = |\alpha_{0000}|^2 f(0000) + |\alpha_{1000}^2| f(1000) + \cdots + |\alpha_{1111}|^2 f(1111)
+\braket{\psi(\beta, \gamma) | H_P |\psi(\beta, \gamma)} = |\alpha_{0000}|^2 f(0000) + |\alpha_{1000}|^2 f(1000) + \cdots + |\alpha_{1111}|^2 f(1111)
 \end{align*}
 $$
 
