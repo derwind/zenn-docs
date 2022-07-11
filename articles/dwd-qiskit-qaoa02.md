@@ -3,7 +3,7 @@ title: "QAOA を眺めてみる (2)"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
