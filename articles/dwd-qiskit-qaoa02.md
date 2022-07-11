@@ -8,7 +8,7 @@ published: true
 
 # 目的
 
-[前回](/articles/dwd-qiskit-qaoa01)、Qiskit textbook の [Solving combinatorial optimization problems using QAOA](https://learn.qiskit.org/course/ch-applications/solving-combinatorial-optimization-problems-using-qaoa) の中の難しいなと感じる式を証明してみたが、その上で読み直してもすぐにはよく分からないので、適当に行間を埋めてみたい。
+[前回](/derwind/articles/dwd-qiskit-qaoa01)、Qiskit textbook の [Solving combinatorial optimization problems using QAOA](https://learn.qiskit.org/course/ch-applications/solving-combinatorial-optimization-problems-using-qaoa) の中の難しいなと感じる式を証明してみたが、その上で読み直してもすぐにはよく分からないので、適当に行間を埋めてみたい。
 
 但し、textbook を読んでも原論文 [A Quantum Approximate Optimization Algorithm](https://arxiv.org/abs/1411.4028) を読んでも[^1]、何故問題のハミルトニアンとミキサーを交互に混ぜるのか？などは見えておらず、あくまで雰囲気だけの記事である。
 
@@ -87,13 +87,13 @@ $$
 
 MAXCUT 問題の最終的な解は $\ket{\psi (\beta_\text{opt}, \gamma_\text{opt})}$ を計算基底について測定することで、概ね $\ket{1010}$ と $\ket{0101}$ が 1/2 ずつくらいの確率で得られるであろうことから $x_1=1, x_2=0, x_3=1, x_4=0$ 或は $x_1=0, x_2=1, x_3=0, x_4=1$（つまり頂点を交互に赤のグループと青のグループに割り振る）が解として得られる。
 
-ストーリーが分かったところで、(2) 式のハミルトニアンを量子回路として実装する必要がある。これはどうすれば良いのであろうか？ここで[前回](/articles/dwd-qiskit-qaoa01)の記事の出番である。
+ストーリーが分かったところで、(2) 式のハミルトニアンを量子回路として実装する必要がある。これはどうすれば良いのであろうか？ここで[前回](/derwind/articles/dwd-qiskit-qaoa01)の記事の出番である。
 
 # 量子回路の実装
 
 ## 問題のハミルトニアン
 
-[前回](/articles/dwd-qiskit-qaoa01)の記事の結果を使って (1) を書き直すと、
+[前回](/derwind/articles/dwd-qiskit-qaoa01)の記事の結果を使って (1) を書き直すと、
 
 $$
 \begin{align*}
@@ -103,7 +103,7 @@ H &= \left(\frac{1-Z_1}{2}\right) \left(\frac{1+Z_2}{2}\right) + \left(\frac{1-Z
 \end{align*}
 $$
 
-となる。これが (2) 式と等しいというのが[前回](/articles/dwd-qiskit-qaoa01)確認した内容であった。
+となる。これが (2) 式と等しいというのが[前回](/derwind/articles/dwd-qiskit-qaoa01)確認した内容であった。
 
 定数項 $2I$ は期待値をとる時に常に定数 $2$ の寄与であるので最適化の考察上は除外して問題ない。よって、textbook に倣い
 
