@@ -3,7 +3,7 @@ title: "Blueqat で遊んでみる (2)"
 emoji: "🐱"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["blueqat", "Qiskit", "量子コンピュータ", "ポエム", "Python"]
-published: false
+published: true
 ---
 
 # 目的
@@ -189,7 +189,7 @@ print(up_down_save_two)
 
 # VQE を実行してみる
 
-漸く blueqat の出番である。タイトルに入れながらここまで登場させてあげることができなかった。その前に、Jordan-Wigner 変換の場合と、量子ビット数削減の場合にはうまく思うような最小固有値が出せなくて、細かいところが分からなかったので、文献 [B] に倣って、Bravyi-Kitaev 変換を用いる[^4]。
+漸く blueqat の出番である。タイトルに入れながらここまで登場させてあげることができなかった。その前に、Jordan-Wigner 変換の場合と量子ビット数削減の場合にはうまく思うような最小固有値が出せなくて[^4]、細かいところが分からなかったので、文献 [B] に倣って、Bravyi-Kitaev 変換を用いる。
 
 [^4]: Jordan-Wigner での VQE の計算結果は `-0.5387095810478522` と大分大きな値になってしまった。ansatz の作り方に依ったりするのだろうか？
 
