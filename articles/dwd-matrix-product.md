@@ -126,7 +126,7 @@ print(f'{T1.shape=}, {T2.shape=}, {T3.shape=}')
 
 > T1.shape=(3, 3), T2.shape=(3, 3, 3), T3.shape=(3, 3)
 
-これで、テンソル $T_{ijk}$ は行列積に分解された:
+これで、テンソル $T^{ijk}$ は行列積に分解された:
 
 $$
 \begin{align*}
