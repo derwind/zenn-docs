@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (6) — QGSS2022 より"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
@@ -56,7 +56,7 @@ print(prob0)
 
 > [0.9599609375]
 
-どうやら 5% くらい $\ket{1}$ が観測されたらしい。[^1]
+どうやら 4% くらい $\ket{1}$ が観測されたらしい。[^1]
 
 [^1]: もっと色んな回数で試したかったが実機の待ち行列が厳しいので 1 回だけにした。
 
