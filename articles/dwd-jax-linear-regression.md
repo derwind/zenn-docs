@@ -3,7 +3,7 @@ title: "JAX で遊んでみる (1) — 線形回帰"
 emoji: "⛓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["機械学習", "ポエム", "Python"]
-published: false
+published: true
 ---
 
 # 目的
