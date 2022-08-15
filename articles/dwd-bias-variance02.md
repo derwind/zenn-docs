@@ -8,7 +8,7 @@ published: true
 
 # 目的
 
-[前回の記事](/derwind/dwd-bias-variance01)では、推定問題について神様の視点でモデルの評価を行なった。今回はもっと現実的に手に入るデータセットからモデルを作る場合の考察を行う。
+[前回の記事](/derwind/articles/dwd-bias-variance01)では、推定問題について神様の視点でモデルの評価を行なった。今回はもっと現実的に手に入るデータセットからモデルを作る場合の考察を行う。
 
 # 今回の範囲
 
@@ -20,7 +20,7 @@ PRML 3.2. The Bias-Variance Decomposition (pp.147-149) を眺める。この内�
 
 # 前回のおさらい
 
-[前回の記事](/derwind/dwd-bias-variance01) から (5) 式を再掲する:
+[前回の記事](/derwind/articles/dwd-bias-variance01) から (5) 式を再掲する:
 
 $$
 \begin{align*}
@@ -31,7 +31,7 @@ $$
 
 ここで $h(\mathrm{x}) = \mathbb{E}[t|\mathrm{x}]$ である。
 
-前回見たように、右辺第 2 項は**データセットのノイズ**であるのでどうにもできない。このため、今回は右辺第 1 項について掘り下げる。
+[前回](/derwind/articles/dwd-bias-variance01)見たように、右辺第 2 項は**データセットのノイズ**であるのでどうにもできない。このため、今回は右辺第 1 項について掘り下げる。
 
 # 有限のデータセットで頑張る
 
