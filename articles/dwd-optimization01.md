@@ -108,7 +108,7 @@ $$
 
 $x^2 + y^2 = 1$ の束縛条件のもとでの、$f(x, y) = x - y$ の最大値を求める。
 
-$F(x, y, \lambda) = x - y + \lambda (x^2 + y^2 - 1)$ と置く。$\frac{\partial F}{\partial x} = 1 + 2 \lambda x = 0$, $\frac{\partial F}{\partial y} = -1 + 2 \lambda y = 0$ としてみると、$(x,y) = (- \frac{1}{2 \lambda}, \frac{1}{2 \lambda})$ が極値を与える点の候補になる。束縛条件を満たすためには、$\left( - \frac{1}{2 \lambda}\right)^2 + \left( \frac{1}{2 \lambda}\right)^2 = 1$ である必要があるので、$\lambda = \pm \frac{1}{\sqrt{2}}$ でなければならない。つまり、$(x,y) = (- \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}})$ か $(x,y) = (\frac{1}{\sqrt{2}}, - \frac{1}{\sqrt{2}})$ が極値の候補であり、また最大値か最小値を与える点の候補になる。
+$F(x, y, \lambda) = x - y + \lambda (x^2 + y^2 - 1)$ と置く。$\frac{\partial F}{\partial x} = 1 + 2 \lambda x = 0$, $\frac{\partial F}{\partial y} = -1 + 2 \lambda y = 0$ としてみると、$(x,y) = (- \frac{1}{2 \lambda}, \frac{1}{2 \lambda})$ が極値を与える点の候補になる。束縛条件を満たすためには、$\left( - \frac{1}{2 \lambda}\right)^2 + \left( \frac{1}{2 \lambda}\right)^2 = 1$ である必要があるので、$\lambda = \pm \frac{1}{\sqrt{2}}$ でなければならない。つまり、$(x,y) = (- \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}})$ か $(x,y) = (\frac{1}{\sqrt{2}}, - \frac{1}{\sqrt{2}})$ が極値を与える点の候補であり、また最大値か最小値を与える点の候補になる。
 
 実際には、$(x,y) = (- \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}})$ が最大値 $\sqrt{2}$ を与える。細かい計算が面倒臭いので、以下のグラフを眺めて納得することにしよう。
 
