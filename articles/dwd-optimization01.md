@@ -3,7 +3,7 @@ title: "最適化について考える (1) — Lagrange の未定乗数法"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["機械学習", "ポエム"]
-published: false
+published: true
 ---
 
 # 目的
@@ -25,7 +25,7 @@ $\R^2$ の適当な領域で定義された実数値の可微分な陰関数 $f$
 
 $$
 \begin{align*}
-F(x, \xi; \lambda) = f(x, \xi) + \lambda \varphi(x, \xi)
+L(x, \xi; \lambda) = f(x, \xi) + \lambda \varphi(x, \xi)
 \tag{1}
 \end{align*}
 $$
@@ -34,8 +34,8 @@ $$
 
 $$
 \begin{align*}
-\frac{\partial F}{\partial x}(a_x^0, a_\xi^0; \lambda) &= 0, \\
-\frac{\partial F}{\partial \xi}(a_x^0, a_\xi^0; \lambda) &= 0
+\frac{\partial L}{\partial x}(a_x^0, a_\xi^0; \lambda) &= 0, \\
+\frac{\partial L}{\partial \xi}(a_x^0, a_\xi^0; \lambda) &= 0
 \end{align*}
 $$
 
@@ -43,7 +43,17 @@ $$
 
 ## この定理は何が嬉しいか？落とし穴は？
 
-主張の対偶をとると、「どのような $\lambda$ をとっても $F$ の $x$ と $\xi$ の微分が $\mathbf{a}$ で同時に消えないなら、$f$ は $\mathbf{a}$ で極値をとらない」となる。このため、微分が消える点は極値の候補となる。但し、極大値か極小値かは分からないし、最大値・最小値を考えたい場合、極値だけでなく、束縛条件による境界での値も確認しないとならない。
+主張の対偶をとると、「どのような $\lambda$ をとっても $L$ の $x$ と $\xi$ の微分が $\mathbf{a}$ で同時に消えないなら、$f$ は $\mathbf{a}$ で極値をとらない」となる。このため、**微分が消える点は極値を与える点の候補**となる。この事実は、最適化問題
+
+$$
+\begin{align*}
+\min_{x, \xi} f(x, \xi) \quad\text{subject to}\quad \varphi(x, \xi) = 0
+\end{align*}
+$$
+
+などを解きたい場合の強力な武器になることを示している。
+
+但し、極大値か極小値かは分からないし、最大値・最小値を考えたい場合、極値だけでなく、束縛条件による境界での値も確認しないとならない。
 
 ## 証明
 
@@ -98,7 +108,7 @@ $$
 \end{align*}
 $$
 
-となる。
+となる。$\blacksquare$
 
 ## 注意
 
@@ -108,7 +118,7 @@ $$
 
 $x^2 + y^2 = 1$ の束縛条件のもとでの、$f(x, y) = x - y$ の最大値を求める。
 
-$F(x, y, \lambda) = x - y + \lambda (x^2 + y^2 - 1)$ と置く。$\frac{\partial F}{\partial x} = 1 + 2 \lambda x = 0$, $\frac{\partial F}{\partial y} = -1 + 2 \lambda y = 0$ としてみると、$(x,y) = (- \frac{1}{2 \lambda}, \frac{1}{2 \lambda})$ が極値を与える点の候補になる。束縛条件を満たすためには、$\left( - \frac{1}{2 \lambda}\right)^2 + \left( \frac{1}{2 \lambda}\right)^2 = 1$ である必要があるので、$\lambda = \pm \frac{1}{\sqrt{2}}$ でなければならない。つまり、$(x,y) = (- \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}})$ か $(x,y) = (\frac{1}{\sqrt{2}}, - \frac{1}{\sqrt{2}})$ が極値を与える点の候補であり、また最大値か最小値を与える点の候補になる。
+$L(x, y, \lambda) = x - y + \lambda (x^2 + y^2 - 1)$ と置く。$\frac{\partial L}{\partial x} = 1 + 2 \lambda x = 0$, $\frac{\partial L}{\partial y} = -1 + 2 \lambda y = 0$ としてみると、$(x,y) = (- \frac{1}{2 \lambda}, \frac{1}{2 \lambda})$ が極値を与える点の候補になる。束縛条件を満たすためには、$\left( - \frac{1}{2 \lambda}\right)^2 + \left( \frac{1}{2 \lambda}\right)^2 = 1$ である必要があるので、$\lambda = \pm \frac{1}{\sqrt{2}}$ でなければならない。つまり、$(x,y) = (- \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}})$ か $(x,y) = (\frac{1}{\sqrt{2}}, - \frac{1}{\sqrt{2}})$ が極値を与える点の候補であり、また最大値か最小値を与える点の候補になる。
 
 実際には、$(x,y) = (- \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}})$ が最大値 $\sqrt{2}$ を与える。細かい計算が面倒臭いので、以下のグラフを眺めて納得することにしよう。
 
