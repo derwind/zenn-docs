@@ -2,7 +2,7 @@
 title: "最適化について考える (2) — SVM"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["機械学習", "ポエム"]
+topics: ["機械学習", "Python", "ポエム"]
 published: true
 ---
 
