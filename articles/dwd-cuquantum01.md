@@ -3,7 +3,7 @@ title: "cuQuantum で遊んでみる (1) — GTC2022 より"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "NVIDIA", "cuQuantum", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
