@@ -3,7 +3,7 @@ title: "カーネル SVM を眺めてみる"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["機械学習", "Python", "ポエム"]
-published: false
+published: true
 ---
 
 # 目的
