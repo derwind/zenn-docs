@@ -3,7 +3,7 @@ title: "cuQuantum で遊んでみる (2) — グローバー探索アルゴリ�
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "NVIDIA", "cuQuantum", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
