@@ -3,7 +3,7 @@ title: "Google Cirq で遊んでみる (1) — グローバー探索アルゴリ
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Cirq", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
