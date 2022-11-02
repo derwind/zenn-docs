@@ -134,7 +134,7 @@ SVGCircuit(grover)
 
 まぁ、こんな感じで・・・。
 
-# qsim シミュレータを使う
+## qsim シミュレータを使う
 
 [qsim](https://quantumai.google/qsim) を読むと
 
