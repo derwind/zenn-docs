@@ -3,7 +3,7 @@ title: "Google Cirq + cuQuantum で遊んでみる (2) — グローバー探索
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Cirq", "NVIDIA", "cuQuantum", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
