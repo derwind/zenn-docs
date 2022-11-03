@@ -8,7 +8,7 @@ published: true
 
 # 目的
 
-[Google Cirq で遊んでみる (1) — グローバー探索アルゴリズム](/derwind/articles/dwd-cuquantum01) に引き続き、Google Cirq を使ってグローバー探索アルゴリズムを実行してみたい。のだが、今回はさらに `cuQuantum` を用いてみたい。
+[Google Cirq で遊んでみる (1) — グローバー探索アルゴリズム](/derwind/articles/dwd-cirq-qsim01) に引き続き、Google Cirq を使ってグローバー探索アルゴリズムを実行してみたい。のだが、今回はさらに `cuQuantum` を用いてみたい。
 
 # cuQuantum 対応 qsim のビルド
 
@@ -62,7 +62,7 @@ python -c "import qsimcirq; print(qsimcirq.qsim_gpu)"
 
 # 実験用回路の実装
 
-[Google Cirq で遊んでみる (1) — グローバー探索アルゴリズム](/derwind/articles/dwd-cuquantum01) と同様なので細かい説明は省く。
+[Google Cirq で遊んでみる (1) — グローバー探索アルゴリズム](/derwind/articles/dwd-cirq-qsim01) と同様なので細かい説明は省く。
 
 ```python
 import numpy as np
