@@ -145,11 +145,11 @@ counts = result_gpu.get_counts()
 print(counts)
 ```
 
+> {'110001110011000111': 513, '101100111000111011': 511}
+
 ```python
 sim_cuq = AerSimulator(method='statevector', device='GPU', cuStateVec_enable=True)
 ```
-
-> {'110001110011000111': 513, '101100111000111011': 511}
 
 ```python
 %%time
