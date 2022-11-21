@@ -8,7 +8,7 @@ published: true
 
 # 目的
 
-[Qiskit で遊んでみる (7) — Qiskit Aer GPU](/derwind/articles/dwd-qiskit08) に引き続き、Ubuntu 環境で [Qiskit Aer](https://github.com/Qiskit/qiskit-aer) の GPU 対応ビルド、とりわけ [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) 対応をビルドしたものを評価したい。
+[Qiskit で遊んでみる (7) — Qiskit Aer GPU](/derwind/articles/dwd-qiskit07) に引き続き、Ubuntu 環境で [Qiskit Aer](https://github.com/Qiskit/qiskit-aer) の GPU 対応ビルド、とりわけ [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) 対応をビルドしたものを評価したい。
 
 コンテンツはこういう場合に個人的によく使っているグローバーのアルゴリズムの回路を使うことにし、[cuQuantum で遊んでみる (2) — グローバー探索アルゴリズム](/derwind/articles/dwd-cuquantum02) をベースにしたい。
 
@@ -166,7 +166,7 @@ print(counts)
 
 > {'110001110011000111': 510, '101100111000111011': 514}
 
-ということで Wall time について結果をまとめると以下のようになっており、CPU >> cuQuantum > GPU という並びであった。[Qiskit で遊んでみる (7) — Qiskit Aer GPU](/derwind/articles/dwd-qiskit08) の回路では cuQuantum が最速だったが、回路との相性があるのだろうか？
+ということで Wall time について結果をまとめると以下のようになっており、CPU >> cuQuantum > GPU という並びであった。[Qiskit で遊んでみる (7) — Qiskit Aer GPU](/derwind/articles/dwd-qiskit07) の回路では cuQuantum が最速だったが、回路との相性があるのだろうか？
 
 |CPU|GPU|cuQuantum|
 |:--:|:--:|:--:|
@@ -290,7 +290,7 @@ print(counts)
 |23|N/A|**1min 44s**|2min 57s|
 |25|N/A|**14min 31s**|24min 49s|
 
-詳細は理由はよく分からないが、CPU よりも GPU と cuQuantum は圧倒的に速いのは確定として、[Qiskit で遊んでみる (7) — Qiskit Aer GPU](/derwind/articles/dwd-qiskit08) では GPU > cuQuantum であった結果が今回は逆転して cuQuantum > GPU になっていた。
+詳細は理由はよく分からないが、CPU よりも GPU と cuQuantum は圧倒的に速いのは確定として、[Qiskit で遊んでみる (7) — Qiskit Aer GPU](/derwind/articles/dwd-qiskit07) では GPU > cuQuantum であった結果が今回は逆転して cuQuantum > GPU になっていた。
 
 この辺は回路との相性があるのかもしれないし、単純に Qiskit Aer と cuQuantum の口が噛み合いにくいのかもしれないし、合わせ込みが不十分なのかもしれないが、詳細は分からない[^2]。ひょっとしたらビルド時に与えるオプションの不備があったのかもしれない。時間が経ってユーザーが増えてきて、事例が増えてきたりするとまた変わってくるのかもしれない。
 
