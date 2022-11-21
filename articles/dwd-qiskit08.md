@@ -2,7 +2,7 @@
 title: "Qiskit で遊んでみる (8) — Qiskit Aer GPU"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["Qiskit", "NVIDIA", "cuQuantum", "poem", "Python"]
+topics: ["Qiskit", "QiskitAer", "NVIDIA", "cuQuantum", "poem", "Python"]
 published: true
 ---
 
