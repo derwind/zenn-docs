@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (10) — スタビライザ符号"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "QiskitAer", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
