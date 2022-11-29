@@ -509,7 +509,7 @@ from qiskit.visualization import plot_histogram
 sim = AerSimulator()
 result = sim.run(circuit.circuit).result()
 counts = result.get_counts()
-plot_histogram(counts2counts(counts, circuit.n_code), figsize=(6,4))
+plot_histogram(counts2counts(counts, circuit), figsize=(6,4))
 ```
 
 ![](/images/dwd-qiskit10/006.png)
