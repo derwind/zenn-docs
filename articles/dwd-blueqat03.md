@@ -278,7 +278,7 @@ expactation_values, _ = do_experiment(n_qubits)
 
 GPU メモリ次第ですが、Colab 上であれば 28 量子ビットくらいまではいけると思いますが、余裕を見て 25 量子ビットまでにしています。
 
-```
+```python
 for n_qubits in range(1, 25+1):
     expactation_values, grads_list = do_experiment(n_qubits, n_epoch=10)
     n_qubits2grads[n_qubits] = grads_list[:10]
