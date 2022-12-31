@@ -136,7 +136,7 @@ Qiskit textbook 或は論文 [2] では
 
 [blueqat SDK](https://github.com/Blueqat/Blueqat) + [cuStateVec](https://docs.nvidia.com/cuda/cuquantum/custatevec/) で検証を行います。Ansatz の設計としては適当な内容になりますが、Barren Plateau を起こしやすそうなグローバル (非局所的) なものを用意し、回路の深さは一定として量子ビットをスケールします。初期値にも相関関係を持たせずにランダムとします。
 
-## 変分回路の外観
+## 変分回路の概観
 
 3 量子ビットのケースで変分回路を見てみます。
 
