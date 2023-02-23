@@ -3,7 +3,7 @@ title: "Windows 11 上に自分好みの開発環境を作る"
 emoji: "🛠"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Windows", "WSL2", "Docker", "GPU", "CUDA"]
-published: false
+published: true
 ---
 
 # 目的
