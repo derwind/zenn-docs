@@ -3,7 +3,7 @@ title: "GCE 上に自分好みの開発環境を作る"
 emoji: "🛠"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["GCP", "Docker", "GPU", "CUDA"]
-published: false
+published: true
 ---
 
 # 目的
