@@ -1,5 +1,5 @@
 ---
-title: "Qiskit で遊んでみる (11) — Qiskit Aer にクラスを追加した話"
+title: "Qiskit で遊んでみる (12) — Qiskit Aer にクラスを追加した話"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "poem"]
