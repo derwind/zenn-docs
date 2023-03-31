@@ -121,7 +121,7 @@ def experiment(qubits=29, device='CPU', cuStateVec_enable=False):
     circuit = QuantumVolume(qubits, depth, seed=0)
     circuit.measure_all()
     circuit = transpile(circuit, sim)
-    result = sim.run(circuit, sim, shots=shots, seed_simulator=12345).result()
+    result = sim.run(circuit, shots=shots, seed_simulator=12345).result()
 
     print(result)
     metadata = result.to_dict()['results'][0]['metadata']
