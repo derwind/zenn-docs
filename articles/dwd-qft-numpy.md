@@ -194,14 +194,14 @@ def partial_trace(vec: np.ndarray, target_qubit: int, n_qubits: int = 4):
 
 $$
 \begin{align*}
-\rho^A &= \sum_i (I_A \otimes \bra{e_j^B}) (\rho \otimes \sigma) (I_A \otimes \ket{e_j^B}) \\
-&= \sum_i \rho \otimes \braket{e_j^B |\sigma | e_j^B} \\
-&= \rho \sum_i \braket{e_j^B |\sigma | e_j^B} = \rho \operatorname{tr} (\sigma)
+\rho^A &= \sum_i (I_A \otimes \bra{e_i^B}) (\rho \otimes \sigma) (I_A \otimes \ket{e_i^B}) \\
+&= \sum_i \rho \otimes \braket{e_i^B |\sigma | e_i^B} \\
+&= \rho \sum_i \braket{e_i^B |\sigma | e_i^B} = \rho \operatorname{tr} (\sigma)
 \tag{4}
 \end{align*}
 $$
 
-ここで、`target_qubit` 番目の量子ビットに対応する部分システムを A、それ以外の量子ビットに対応する部分システムを B とし、$\{ \ket{e_j^B} \}$ は `target_qubit` 番目の量子ビットを除いた計算基底全体をわたるとする[^1]。
+ここで、`target_qubit` 番目の量子ビットに対応する部分システムを A、それ以外の量子ビットに対応する部分システムを B とし、$\{ \ket{e_i^B} \}$ は `target_qubit` 番目の量子ビットを除いた計算基底全体をわたるとする[^1]。
 
 [^1]: やや苦しい数式であり、厳密ではない。例えば 4 量子ビットのケースで、2 番目の量子ビットに対する状態を取り出したい場合にはこの数式では不完全である。`partial_basis_generator` では 0 番目と 1 番目の量子ビットの計算基底からなるベクトルと、3 番目の量子ビットの計算基底のベクトルの間に単位行列を挟む形でクロネッカー積をとっている。
 
