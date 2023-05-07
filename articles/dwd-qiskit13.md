@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (13) — 量子位相推定"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "poem"]
-published: false
+published: true
 ---
 
 # 目的
