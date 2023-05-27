@@ -220,7 +220,7 @@ qc.draw(scale=0.4, fold=75)
 
 ---
 
-測定を行って $\varphi$ を推定しよう。今回は状態ベクトルで直接求める。
+測定を行って $\varphi$ を推定しよう。
 
 まず、シミュレータが解釈できるゲートになるまで `.decompose` を適用する。何回適用すれば良いかよく分からないが、今回のケースでは 6 回だった。
 
@@ -257,9 +257,9 @@ print(f'estimated={estimated_theta}, real theta={theta}')
 
 まぁまぁの精度で $\theta$ の近似値が得られたのではないだろうか？
 
-# やってみる (GPU 計算)
+# もう少し精度を上げてやってみる
 
-ここまでは CPU 上での計算で、わりとすぐに完了する。が、精度面では恐らく不満も残るものであると思う。そこで精度をあげて、12 量子ビットでシミュレーションを行ってみたい。この規模になると CPU だとしんどいと思われるので、GPU を使う。[Qiskit で遊んでみる (7) — Qiskit Aer GPU](https://zenn.dev/derwind/articles/dwd-qiskit07) に書いたような手順で Colab 上で GPU 対応 Qiskit Aer を実行できる。なお、この記事は現時点では古くなっているので、適宜読み替える必要がある。
+ここまでは CPU 上での計算で、わりとすぐに完了する。が、精度面では恐らく不満も残るものであると思う。そこで精度をあげて、12 量子ビットでシミュレーションを行ってみたい。この規模になると CPU だとしんどいと思われるが、まずは試してみる。
 
 適当にセルを抜粋して実行時間を掲載すると以下のような結果であった:
 
@@ -283,7 +283,8 @@ for i in range(n_qubits):
 
 iqft_circuit = QFT(n_qubits).inverse()
 qc = qc.compose(iqft_circuit, list(range(n_qubits)))
-qc.measure_all()
+for i in range(n_qubits):
+    qc.measure(i, i)
 print(len(qc))
 ```
 
@@ -304,6 +305,34 @@ print(len(qc1))
 
 `.decompose` 前は 4233 だった深さが、57729 にまで増えているのもつらいところである。つまり理論上は $\mathcal{O}(2^n)$ の深度でも、シミュレータや実機上で実行できるゲートにまでトランスパイルして分解すると、遥かに深い可能性がある。また、ゲートの深さが指数関数的に増えるので、量子ビット数を 1 つ増やすごとに、量子回路の構築時間が倍々で増えるかもしれない。
 
+さて、まずは CPU で試してみよう:
+
+```python
+%%time
+
+sim = AerSimulator(method='statevector')
+counts = sim.run(qc1).result().get_counts()
+
+counts_items = sorted(counts.items(), key=lambda k_v: -k_v[1])
+print(counts_items[:5])
+```
+
+これを実行したところ、16 分を経過しても完了しなかったので諦めた。
+
+少し書き換えて以下のようにしてみる。GPU が効率的に使われるかはよく分からないが、試してみる。GPU の使用については、[Qiskit で遊んでみる (7) — Qiskit Aer GPU](https://zenn.dev/derwind/articles/dwd-qiskit07) に書いたような手順で Colab 上で GPU 対応 Qiskit Aer を実行できる。なお、この記事は現時点では古くなっているので、適宜読み替える必要がある。
+
+```python
+%%time
+
+sim = AerSimulator(method='statevector', device='GPU')
+counts = sim.run(qc1).result().get_counts()
+
+counts_items = sorted(counts.items(), key=lambda k_v: -k_v[1])
+print(counts_items[:5])
+```
+
+これも、20 分超えても完了しなかったので諦めた。あまり理由は分からないが以下は結構時間がかかるなりに、そこそこ早く終わった:
+
 ```python
 %%time
 
@@ -318,8 +347,6 @@ print(counts_items[:5])
 > CPU times: user 11min 8s, sys: 3.03 s, total: 11min 11s
 > Wall time: 11min
 
-GPU を使ったものの結構時間がかかった。1 つの理由としては、状態ベクトルの GPU シミュレーションは常に GPU を使うわけではなく、CPU に戻って、次のゲートの投入、次のゲートの投入・・・という処理を回す「CPU-GPU ハイブリッド」な感じになるからかもしれない。一瞬 GPU を使って、また一瞬 GPU を使ってと、深層学習に比べて遥かに穏やかな GPU の使い方をしている。
-
 ```python
 state, count = counts_items[0]
 
@@ -332,6 +359,46 @@ print(f'estimated={estimated_theta}, real theta={theta}')
 4 量子ビットの時よりはかなりマシな精度で推定できた。但し、量子ビット数を増やしても 2 進小数の桁の精度しか上がらないので、10 進小数と比較すると精度の改善が緩やかであることには注意したい。
 
 大雑把に 12 量子ビットでの計算で 15 分程度かかったわけだが、13 量子ビットだと 30 分、14 量子ビットだと 1 時間くらいかかることになるのだろうか？
+
+# 別の方法でやってみる (GPU 計算)
+
+大量の量子ビット数だと難しくなる方法だが、状態ベクトルを直接求めてしまうという手もある。この場合、内部的に巨大なユニタリ行列を状態ベクトルにかけまくることになるので通常はメモリも大量に消費して重いのだが、GPU の得意分野でもあるので速度が出せるかもしれない。
+
+測定はエルミート演算であってユニタリではないからという理由かもしれないが、とにかく非対応なので、測定演算
+
+```python
+for i in range(n_qubits):
+    qc.measure(i, i)
+```
+
+を除去する。そうして transpile した後に、
+
+```python
+from qiskit_aer.quantum_info import AerStatevector as Statevector
+```
+
+して以下を実行する。
+
+```python
+%%time
+
+sv = Statevector(qc1, device='GPU', cuStateVec_enable=True)
+```
+
+> CPU times: user 2.03 s, sys: 33 ms, total: 2.07 s
+> Wall time: 2.06 s
+
+やはり GPU の得意分野だけあって劇的に速い。ほぼ一瞬だった。
+
+```python
+state, _ = sorted(sv.probabilities_dict().items(), key=lambda k_v: -k_v[1])[0]
+estimated_theta = int(state, 2) / (2**n_qubits)
+print(f'estimated={estimated_theta}, real theta={theta}')
+```
+
+> estimated=0.458251953125, real theta=0.4582020868266377
+
+測定で求めた場合と同じ結果になるし、そもそも状態ベクトルを求めているので理論上の結果が出る。
 
 # まとめ
 
