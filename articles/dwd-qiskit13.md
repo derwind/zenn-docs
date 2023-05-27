@@ -194,7 +194,7 @@ unitary_gate.name = 'random_unitary'
 
 n_qubits = 4
 
-qc = QuantumCircuit(n_qubits + 1)
+qc = QuantumCircuit(n_qubits + 1, n_qubits)
 for i in range(n_qubits):
     qc.h(i)
 
@@ -209,7 +209,8 @@ for i in range(n_qubits):
 
 iqft_circuit = QFT(n_qubits).inverse()
 qc = qc.compose(iqft_circuit, list(range(n_qubits)))
-qc.measure_all()
+for i in range(n_qubits):
+    qc.measure(i, i)
 qc.draw(scale=0.4, fold=75)
 ```
 
@@ -241,9 +242,9 @@ counts_items = sorted(counts.items(), key=lambda k_v: -k_v[1])
 print(counts_items)
 ```
 
-> [('00111', 547), ('01000', 166), ('10111', 120), ('00110', 38), ('11000', 27), ('01001', 20), ('00101', 13), ('01011', 13), ('01010', 12), ('00011', 8), ('10100', 7), ('01100', 7), ('11001', 6), ('00100', 6), ('00010', 5), ('10110', 5), ('01110', 4), ('00000', 3), ('10010', 2), ('10011', 2), ('11011', 2), ('11100', 2), ('11010', 2), ('00001', 2), ('10001', 1), ('11111', 1), ('10101', 1), ('11101', 1), ('01101', 1)]
+> [('0111', 710), ('1000', 169), ('0110', 48), ('1001', 32), ('0101', 14), ('1010', 12), ('1011', 10), ('0011', 9), ('0100', 5), ('1110', 3), ('0010', 2), ('0000', 2), ('1101', 2), ('1111', 2), ('0001', 2), ('1100', 2)]
 
-思ったより圧倒的な頻度で答えが得られていないので、ノイズがあると少々怖い。
+まぁまぁの頻度で答えが得られているが、ノイズがあると少々怖い。
 
 ```python
 state, count = counts_items[0]
@@ -286,9 +287,9 @@ qc.measure_all()
 print(len(qc))
 ```
 
-> 4135
-> CPU times: user 48.9 s, sys: 225 ms, total: 49.1 s
-> Wall time: 51.1 s
+> 4133
+> CPU times: user 54.5 s, sys: 463 ms, total: 55 s
+> Wall time: 55.3 s
 
 ```python
 %%time
@@ -297,11 +298,11 @@ qc1 = qc.decompose().decompose().decompose().decompose().decompose().decompose()
 print(len(qc1))
 ```
 
-> 57731
-> CPU times: user 1min 27s, sys: 300 ms, total: 1min 27s
-> Wall time: 1min 28s
+> 57729
+> CPU times: user 1min 30s, sys: 434 ms, total: 1min 30s
+> Wall time: 1min 31s
 
-`.decompose` 前は 4235 だった深さが、57731 にまで増えているのもつらいところである。つまり理論上は $\mathcal{O}(2^n)$ の深度でも、シミュレータや実機上で実行できるゲートにまでトランスパイルして分解すると、遥かに深い可能性がある。また、ゲートの深さが指数関数的に増えるので、量子ビット数を 1 つ増やすごとに、量子回路の構築時間が倍々で増えるかもしれない。
+`.decompose` 前は 4233 だった深さが、57729 にまで増えているのもつらいところである。つまり理論上は $\mathcal{O}(2^n)$ の深度でも、シミュレータや実機上で実行できるゲートにまでトランスパイルして分解すると、遥かに深い可能性がある。また、ゲートの深さが指数関数的に増えるので、量子ビット数を 1 つ増やすごとに、量子回路の構築時間が倍々で増えるかもしれない。
 
 ```python
 %%time
@@ -313,9 +314,9 @@ counts_items = sorted(counts.items(), key=lambda k_v: -k_v[1])
 print(counts_items[:5])
 ```
 
-> [('0011101010101', 719), ('1011101010101', 157), ('0011101010100', 51), ('0011101010110', 17), ('1011101010100', 15)]
-> CPU times: user 10min 35s, sys: 2.31 s, total: 10min 37s
-> Wall time: 10min 24s
+> [('011101010101', 882), ('011101010100', 53), ('011101010110', 30), ('011101010011', 14), ('011101010111', 9)]
+> CPU times: user 11min 8s, sys: 3.03 s, total: 11min 11s
+> Wall time: 11min
 
 GPU を使ったものの結構時間がかかった。1 つの理由としては、状態ベクトルの GPU シミュレーションは常に GPU を使うわけではなく、CPU に戻って、次のゲートの投入、次のゲートの投入・・・という処理を回す「CPU-GPU ハイブリッド」な感じになるからかもしれない。一瞬 GPU を使って、また一瞬 GPU を使ってと、深層学習に比べて遥かに穏やかな GPU の使い方をしている。
 
