@@ -3,7 +3,7 @@ title: "cuQuantum で遊んでみる (5) — VQE その 2"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "NVIDIA", "cuQuantum", "poem", "Python"]
-published: false
+published: true
 ---
 
 # 目的
