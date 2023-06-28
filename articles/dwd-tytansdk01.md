@@ -3,7 +3,7 @@ title: "TYTAN SDK で遊んでみる (1) — 入門の入門"
 emoji: "🚚"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["poem", "Python", "qubo"]
-published: false
+published: true
 ---
 
 # 目的
