@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (15) — Quantum Machine Learning"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python", "量子機械学習", "機械学習"]
-published: false
+published: true
 ---
 
 # 目的
@@ -148,7 +148,7 @@ target_transform = transforms.Compose([
 ])
 
 class TransformableDataset(Dataset):
-    def __init__(self, data, target, transform=None, target_transform=None):
+    def __init__(self,data, target, transform=None, target_transform=None):
         self.data = data
         self.target = target
         self.transform = transform
