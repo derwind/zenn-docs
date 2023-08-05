@@ -58,7 +58,7 @@ transpile(placeholder_circuit, backend=device).draw()
 
 ![](/images/dwd-qiskit15/001.png)
 
-よりも深くなっている。が、SWAP などは入っておらず、素直な展開になっていると思う。これはそれを期待して `ibmq_manila` を持ていているからである。
+よりも深くなっている。が、SWAP などは入っておらず、素直な展開になっていると思う。これはそれを期待して `ibmq_manila` を使っているからである。
 
 ## `ibmq_manila` のレイアウト
 
