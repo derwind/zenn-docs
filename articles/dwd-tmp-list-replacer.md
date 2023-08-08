@@ -3,7 +3,7 @@ title: "Python でリストの中身を一時的に置き換える"
 emoji: "🐍"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python"]
-published: false
+published: true
 ---
 
 # 目的
