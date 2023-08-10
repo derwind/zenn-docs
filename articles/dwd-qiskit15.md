@@ -169,7 +169,7 @@ class TransformableDataset(Dataset):
         return x, y
 ```
 
-`transform_label` の内容は暗黙のうちに、Versicolor とその他での二値分類を想定している。Setosa (0), Sersicolor (1), Versinica (2) で、特に今回は Sersicolor (1) vs Versinica (2) をするので、**Versinica を -1 になるようにしている**。データローダは PyTorch のものを AS IS で使うことにする。
+`transform_label` の内容は暗黙のうちに、Versicolor とその他での二値分類を想定している。Setosa (0), Versicolor (1), Versinica (2) で、特に今回は Versicolor (1) vs Versinica (2) をするので、**Versinica を -1 になるようにしている**。データローダは PyTorch のものを AS IS で使うことにする。
 
 # メイン実装
 
