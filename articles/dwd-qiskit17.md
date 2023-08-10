@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (17) — Quantum Machine Learning その 3"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python", "量子機械学習", "機械学習", "cuQuantum"]
-published: false
+published: true
 ---
 
 # 目的
