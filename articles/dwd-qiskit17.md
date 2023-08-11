@@ -392,11 +392,9 @@ print(f'final loss={loss_list[-1]}')
 print(f'{opt_params=}')
 ```
 
-ナイーブな実装では 33min 31s かかったが、今回の実装で、凡そ 2 分まで短縮された。早い時は 1min 27s 程度で完了した。
+ナイーブな実装では 33min 31s かかったが、今回の実装で、凡そ 2 分まで短縮された。早い時は 1min 27s 程度で完了した。Google Colab 上で実行すると 2 分を切りやすいように感じた。
 
 ![](/images/dwd-qiskit17/002.png)
-
-時々コストが一気に跳ね上がるのは何故だろう？ここは調査しきれていない。
 
 # テスト精度
 
@@ -404,7 +402,7 @@ print(f'{opt_params=}')
 testloader = DataLoader(testset, 32)
 
 qc_pl = make_placeholder_circuit(n_qubits)
-pname2locs, expr, oprands = find_ry_locs(qc_pl, hamiltonian, return_tn=True)
+pname2locs, expr, operands = find_ry_locs(qc_pl, hamiltonian, return_tn=True)
 pname2theta = {f"θ[{i}]": params[i] for i in range(len(params))}
 
 total = 0
@@ -435,9 +433,9 @@ for i, (batch, label) in enumerate(testloader):
 print(f'test acc={np.round(total_correct/total, 2)}')
 ```
 
-> test acc=0.83
+> test acc=0.9
 
-こちらもよく分からないが、テスト精度が前回の CPU のケースに比べると低い。何故だろう。この辺も追々調査していきたい。なお、ナイーブな実装では時間こそかかったが、コストが跳ねたりせず、CPU 版と同程度の精度だったので、この辺の差異も気にはなっている。
+データセットが小さいこともあり、実行ごとに多少最適化後のパラメータに差が出るのか、test acc は 0.83, 0.87, 0.9 あたりが出やすかった。1 回だけ 0.96 というのも見たが、再現できていない。ガチャみたいな感じである。
 
 # まとめ
 
