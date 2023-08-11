@@ -233,7 +233,7 @@ class PQCTrainerTN:
             self.qc_pl, operator, return_tn=True
         )
 
-        dataloader = DataLoader(dataset, batch_size, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size, shuffle=True, drop_last=True)
         callbacks = callbacks if callbacks is not None else []
 
         opt_loss = sys.maxsize
