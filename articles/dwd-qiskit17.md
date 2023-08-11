@@ -344,7 +344,7 @@ def RunPQCTrain(
     dataset: Dataset,
     batch_size: int,
     qc: QuantumCircuit,
-    operator: BaseOperator,
+    operator: str,
     init: Sequence[float] | None = None,
     epochs: int = 1,
     interval: int = 100
