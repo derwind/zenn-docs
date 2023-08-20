@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (18) — Quantum Convolutional Networks その
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python", "量子機械学習", "機械学習"]
-published: false
+published: true
 ---
 
 # 目的
