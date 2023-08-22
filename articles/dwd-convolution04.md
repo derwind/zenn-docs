@@ -3,7 +3,7 @@ title: "ニューラルネットの畳み込み層 (4) — 量子畳み込みニ
 emoji: "⛓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["機械学習", "ポエム", "Python"]
-published: false
+published: true
 ---
 
 # 目的
