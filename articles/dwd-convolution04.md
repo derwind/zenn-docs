@@ -286,11 +286,6 @@ def RunTrain(
     return loss_list
 ```
 
-> ...
-> final loss=0.8817483186721802
-> CPU times: user 4.2 s, sys: 177 ms, total: 4.38 s
-> Wall time: 785 ms
-
 # 訓練
 
 概ね 1 秒未満で完了するはず。
@@ -304,6 +299,11 @@ loss_list = RunTrain(trainset, len(trainset), model, epochs=200, interval=10)
 
 print(f'final loss={loss_list[-1]}')
 ```
+
+> ...
+> final loss=0.8817483186721802
+> CPU times: user 4.2 s, sys: 177 ms, total: 4.38 s
+> Wall time: 785 ms
 
 ![](/images/dwd-convolution04/001.png)
 
