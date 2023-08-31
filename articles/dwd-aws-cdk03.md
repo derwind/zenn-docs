@@ -2,8 +2,8 @@
 title: "LocalStack と CDK で遊んでみる (3) — Web アプリに挑戦"
 emoji: "🌨"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["AWS", "LocalStack", "poem", "TypeScript"]
-published: false
+topics: ["AWS", "LocalStack", "awscdk", "poem", "TypeScript"]
+published: true
 ---
 
 # 目的
@@ -11,6 +11,8 @@ published: false
 何となく [SAA-C03](https://aws.amazon.com/jp/certification/certified-solutions-architect-associate/) を受けてみたいが、本だけ読んで勉強するのはつらいので手を動かしたい。ので、少しそれっぽいことを CDK + LocalStack でやりたいなというもの。
 
 ちょうど [AWS CDK+localstackを使ってよくあるRESTなWebアプリ構成を作ってみる](https://zenn.dev/okojomoeko/articles/f4458e1efc8f7a) という素晴らしい記事があったので、内容を読みつつ少し読み替えて実装してみたい。
+
+[LocalStack と CDK で遊んでみる (2)](/derwind/articles/dwd-aws-cdk02) 以来の久しぶりの CDK ネタでもある。
 
 # 開発環境
 
@@ -27,7 +29,7 @@ published: false
 基本的に [AWS CDK+localstackを使ってよくあるRESTなWebアプリ構成を作ってみる](https://zenn.dev/okojomoeko/articles/f4458e1efc8f7a) のままだが、少し変更する。
 
 - Lambda の Python: 3.9 → 3.10
-- 外部 PC からの実行を想定して CORS の設定を API Gateway に追加
+- 外部 PC からの実行を想定して CORS の設定を Lambda に追加
 
 ソースコード: https://github.com/derwind/cdk-study/tree/rest-web-app
 
@@ -70,7 +72,25 @@ services:
 VITE_REST_API_ROOT_URL=http://xxx.xxx.xxx.xxx:4566/restapis/yyyyyyyyyy/prod/_user_request_/
 ```
 
-## CORS の設定
+## CORS (Cross-Origin Resource Sharing) の設定
+
+毎回よく分かっていないので宜しくはないのだが[^1]、今回のパターンでは、各 Lambda の戻り値に CORS の設定を追加すれば良さそうであった。内容は雑なので、もっと適切に設定すべきではある:
+
+[^1]: [@aws_cdk/aws-apigatewayv2-alpha](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-apigatewayv2-alpha-readme.html) を使う場合や、Lambda 関数 URL を使う場合でそれぞれちょっとずつ設定が違うのだが、本質は何なんだろう？
+
+```python
+def handler(event, context):
+    ...
+    return {
+        "statusCode": 200,
+        "body": json.dumps({"res": results, "event": event}),
+        "headers": {  # CORS の設定
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD",
+            "Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        },
+    }
+```
 
 # 動作確認
 
@@ -93,6 +113,7 @@ docker compose up -d
 ## Bootstrap
 
 ```sh
+cd app
 cdklocal bootstrap aws://000000000000/us-east-1
 ```
 
@@ -103,7 +124,34 @@ cd app
 cdklocal deploy
 ```
 
-参考記事では `BucketDeployment` が使えないとあるが、仮に使うとどうなるか試した。結論として、スタックのデプロイは通って、S3 にバケットも作成されるのだが、当該バケットに下に何もオブジェクトがデプロイされていないという状況になった
+## Web アプリの起動
+
+S3 に Web アプリをデプロイした場合、LocalStack を動かしている PC 内からは `CfnOutput` した URL へのアクセスでいけたのだが、外部 PC からは名前解決できそうになかったので諦めて dev サーバ上で確認することにした:
+
+```sh
+cd web
+npm run dev
+```
+
+画面イメージは以下の通り:
+
+![](/images/dwd-aws-cdk03/001.png)
+
+# まとめ
+
+一番手こずったのは CORS の設定の部分なのだが、何とかこの構成でも適用して別 PC からアクセスすることができた。
+
+今回の内容に近いことは既に何回かやったことはあるのだが、実際の AWS でやっていて LocalStack では初めてだったので動くかどうか試してみたかったのがあった。
+
+これで、[SAA-C03](https://aws.amazon.com/jp/certification/certified-solutions-architect-associate/) に向けての “無料の AWS 環境” が用意できたような気がする[^2]。
+
+[^2]: どうせマネジメントコンソールではほとんど操作しないから、基本機能が動けば本物の AWS でも LocalStack でもどちらでも良いのである。
+
+# Appendix
+
+## BucketDeployment の件
+
+参考にした [AWS CDK+localstackを使ってよくあるRESTなWebアプリ構成を作ってみる](https://zenn.dev/okojomoeko/articles/f4458e1efc8f7a) では `BucketDeployment` が使えないとあるが、仮に使うとどうなるか試した。結論として、スタックのデプロイは通って、S3 にバケットも作成されるのだが、当該バケットに下に何もオブジェクトがデプロイされていないという状況になった
 
 ```typescript
 import {
@@ -125,13 +173,6 @@ export class AppStack extends cdk.Stack {
 }
 ```
 
-## Web アプリの起動
-
-```sh
-cd web
-npm run dev
-```
-
 # 雑多なデバッグ用の色々 (メモ)
 
 ## Lambda 一覧
@@ -146,7 +187,7 @@ aws --profile localstack lambda list-functions
 aws --profile localstack apigateway get-rest-apis
 ```
 
-## ClougWatch Logs
+## CloudWatch Logs
 
 ### ロググループを確認
 
@@ -167,5 +208,3 @@ aws --profile localstack logs describe-log-streams --log-group-name "/aws/lambda
 ```sh
 aws --profile localstack logs get-log-events --log-group-name "/aws/lambda/RegisterData" --log-stream-name "2023/08/29/[\$LATEST]7ae57eaea31e16f0f00b724e8639425a"
 ```
-
-# まとめ
