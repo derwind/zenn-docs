@@ -3,7 +3,7 @@ title: "cuQuantum で遊んでみる (6) — 最大カット問題と QUBO と Q
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "NVIDIA", "cuQuantum", "qubo", "Python"]
-published: false
+published: true
 ---
 
 # 目的
