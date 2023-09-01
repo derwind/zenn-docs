@@ -341,7 +341,7 @@ for k, n in sorted(counts.items(), key=lambda k_v: -k_v[1]):
 > 10010 -4.0 254
 > 10011 -4.0 241
 
-念のため、`cuTensorNet`` の API でも求めてみよう。Qiskit の測定演算子があると計算できないので、それを外してからテンソルに変換する。今回は 5 量子ビットと規模が小さいので状態ベクトルを求めることにする。
+念のため、`cuTensorNet` の API でも求めてみよう。Qiskit の測定演算子があると計算できないので、それを外してからテンソルに変換する。今回は 5 量子ビットと規模が小さいので状態ベクトルを求めることにする。
 
 ```python
 opt_qc.remove_final_measurements()
