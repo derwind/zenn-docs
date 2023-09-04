@@ -3,7 +3,7 @@ title: "cuQuantum で遊んでみる (8) — QAOA の期待値計算高速化"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "NVIDIA", "cuQuantum", "Python"]
-published: false
+published: true
 ---
 
 # 目的
