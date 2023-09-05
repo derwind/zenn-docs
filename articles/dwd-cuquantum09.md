@@ -3,7 +3,7 @@ title: "cuQuantum で遊んでみる (9) — 少し規模が大きめの QAOA �
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "NVIDIA", "cuQuantum", "Python"]
-published: false
+published: true
 ---
 
 # 目的
