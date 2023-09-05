@@ -96,7 +96,7 @@ def Rx_Rz(
 # プレースホルダーの量子回路からプレースホルダーのテンソルネットワークを作成する。
 def circuit_to_einsum_expectation(
     qc: QuantumCircuit, hamiltonian: str
-) -> tuple[str, list[cp.ndarray], dict[str, tuple[list[int], list[int], Pauli]]]:
+) -> tuple[str, list[cp.ndarray], dict[str, tuple[list[int], list[int], Callable]]]:
     length = len(qc.parameters)
     eps = 0.01
     # ダミーのパラメータを割り当てておいて
