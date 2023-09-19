@@ -134,7 +134,7 @@ $$
 
 ```python
 from scipy.optimize import minimize
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, transpile
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.circuit import ParameterVector
 from qiskit.primitives import Estimator
@@ -147,11 +147,11 @@ Ansatz を実装する。上記で言うと $p=3$ 程度がほどほどに良い
 n_qubits = 5
 n_reps = 3
 
-beta = ParameterVector("β", n_qubits * n_reps)
-gamma = ParameterVector("γ", 6 * n_reps)
-beta_idx = iter(range(n_qubits * n_reps))
+betas = ParameterVector("β", n_reps)
+gammas = ParameterVector("γ", n_reps)
+beta_idx = iter(range(n_reps))
 bi = lambda: next(beta_idx)
-gamma_idx = iter(range(6 * n_reps))
+gamma_idx = iter(range(n_reps))
 gi = lambda: next(gamma_idx)
 
 # Ansatz の回路
@@ -160,18 +160,20 @@ qc = QuantumCircuit(n_qubits)
 qc.h(qc.qregs[0][:])
 for _ in range(n_reps):
     # 問題ハミルトニアンの時間発展演算子: exp(-γ/2 x 2H_p)
-    qc.rzz(2*gamma[gi()], 0, 1)
-    qc.rzz(2*gamma[gi()], 0, 2)
-    qc.rzz(2*gamma[gi()], 1, 3)
-    qc.rzz(2*gamma[gi()], 2, 3)
-    qc.rzz(2*gamma[gi()], 2, 4)
-    qc.rzz(2*gamma[gi()], 3, 4)
+    gamma = gammas[gi()]
+    qc.rzz(2*gamma, 0, 1)
+    qc.rzz(2*gamma, 0, 2)
+    qc.rzz(2*gamma, 1, 3)
+    qc.rzz(2*gamma, 2, 3)
+    qc.rzz(2*gamma, 2, 4)
+    qc.rzz(2*gamma, 3, 4)
     qc.barrier()
     # ミキシングハミルトニアンの時間発展演算子: exp(-β/2 x 2H_B)
+    beta = betas[bi()]
     for i in range(n_qubits):
-        qc.rx(2*beta[bi()], i)
+        qc.rx(2*beta, i)
 
-qc.draw(fold=-1)
+qc.draw("mpl", fold=-1)
 ```
 
 ![](/images/dwd-cuquantum06/001.png)
@@ -186,7 +188,8 @@ def comnpute_expectation(params, *args):
     qc = qc.bind_parameters(params)
     return estimator.run([qc], [hamiltonian]).result().values[0]
 
-init = np.random.randn(qc.num_parameters) * np.pi
+rng = np.random.default_rng(42)
+init = rng.random(qc.num_parameters) * np.pi
 pauli_list = ["IIIZZ", "IIZIZ", "IZIZI", "IZZII", "ZIZII", "ZZIII"]
 hamiltonian = SparsePauliOp(pauli_list)
 estimator = Estimator()
@@ -206,11 +209,11 @@ print(f"opt value={round(result.fun, 3)}")
 ```
 
 > Maximum number of function evaluations has been exceeded.
-> opt value=-3.994
-> CPU times: user 2.6 s, sys: 303 ms, total: 2.9 s
-> Wall time: 3.5 s
+> opt value=-3.013
+> CPU times: user 2.65 s, sys: 80.9 ms, total: 2.73 s
+> Wall time: 3.01 s
 
-最適化したハミルトニアンのエネルギー値は -3.994 で、疑似量子アニーリングで得た -4.0 にとても近い。
+最適化したハミルトニアンのエネルギー値は -3.013 で、疑似量子アニーリングで得た -4.0 とは少し乖離しているが、これについては `n_reps` を大きくすれば改善はする。今回はこの程度で満足することにする。
 
 さて、この最小値を実現するパラメータによって、どういう量子状態が得られているのであろうか？Qiskit は LSB が右であるので表示の差異には文字列を反転させて表示することに注意して欲しい。
 
@@ -219,17 +222,20 @@ opt_qc = qc.bind_parameters(result.x)
 opt_qc.measure_all()
 
 sim = AerSimulator()
-counts = sim.run(opt_qc).result().get_counts()
+t_qc = transpile(opt_qc, backend=sim)
+counts = sim.run(t_qc).result().get_counts()
 for k, n in sorted(counts.items(), key=lambda k_v: -k_v[1]):
     if n < 100:
         continue
     print(k[::-1], n)
 ```
 
-> 01100 497
-> 10011 466
+> 01101 168
+> 10011 165
+> 01100 160
+> 10010 156
 
-要するに、概ね “$\frac{1}{2} \ket{01100} + \frac{1}{2} \ket{10011}$” のような形で、最適解を与える状態の重ね合わせとして求まっている。ここで相対位相は求めていないので正確な状態はよく分からず、この式はあくまで雰囲気である。
+要するに、かなりざっくりと下位の頻度の解を無視すれば、概ね “$\frac{1}{4} \ket{01101} + \frac{1}{4} \ket{10011} + \frac{1}{4} \ket{01100} + \frac{1}{4} \ket{10010}$” のような形で、最適解を与える状態の重ね合わせとして求まっている。ここで相対位相は求めていないので正確な状態はよく分からず、この式はあくまで雰囲気である。
 
 疑似量子アニーリングで得た結果は以下であったので、最初と最後の解が得られた形である。なお、メタヒューリスティクスなので、解が得られたり得られなかったりする[^1]。
 
@@ -268,6 +274,8 @@ from cuquantum import CircuitToEinsum, contract
 ```python
 pauli_list_cutn = [pauli[::-1] for pauli in pauli_list]
 
+losses = []
+
 def comnpute_expectation_tn(params, *args):
     qc, pauli_list_cutn = args
     qc = qc.bind_parameters(params)
@@ -280,6 +288,8 @@ def comnpute_expectation_tn(params, *args):
         expr, operands = converter.expectation(pauli_string)
         energy += cp.asnumpy(contract(expr, *operands).real)
 
+    losses.append(energy)
+
     return energy
 ```
 
@@ -290,7 +300,8 @@ def comnpute_expectation_tn(params, *args):
 ```python
 %%time
 
-init = np.random.randn(qc.num_parameters) * np.pi
+rng = np.random.default_rng(42)
+init = rng.random(qc.num_parameters) * np.pi
 
 result = minimize(
     comnpute_expectation_tn,
@@ -307,11 +318,26 @@ print(f"opt value={round(result.fun, 3)}")
 ```
 
 > Maximum number of function evaluations has been exceeded.
-> opt value=-3.99
-> CPU times: user 2min 10s, sys: 4.02 s, total: 2min 14s
-> Wall time: 2min 14s
+> opt value=-3.013
+> CPU times: user 1min 51s, sys: 1.16 s, total: 1min 52s
+> Wall time: 1min 52s
 
-今回も良い最小エネルギーが求まった。
+今回も上記と同程度の精度の最小エネルギーが求まった。
+
+コストの動きも見てみよう。
+
+```python
+import matplotlib.pyplot as plt
+
+plt.figure()
+x = np.arange(0, len(losses), 1)
+plt.plot(x, losses, color="blue")
+plt.show()
+```
+
+![](/images/dwd-cuquantum06/002.png)
+
+綺麗にコストが下がっていっている。より良い最小エネルギーを得るには、`maxiter` ではなく `n_reps` を増やすほうが良さそうである。
 
 最適パラメータを用いてどういう状態が得られているか確認しよう。
 
@@ -320,19 +346,20 @@ opt_qc = qc.bind_parameters(result.x)
 opt_qc.measure_all()
 
 sim = AerSimulator()
-counts = sim.run(opt_qc).result().get_counts()
+t_qc = transpile(opt_qc, backend=sim)
+counts = sim.run(t_qc).result().get_counts()
 for k, n in sorted(counts.items(), key=lambda k_v: -k_v[1]):
     if n < 100:
         continue
     print(k[::-1], n)
 ```
 
-> 01101 336
-> 10010 332
-> 10011 178
-> 01100 173
+> 10010 169
+> 01100 166
+> 10011 149
+> 01101 144
 
-再度アニーリングの結果を掲載すると、以下だったのですべての解が今回は求まったことになる。
+再度アニーリングの結果を掲載すると、以下だったのですべての解が求まったことになる。
 
 [アニーリングの結果]
 
@@ -367,10 +394,16 @@ for k, prob in sorted(d.items(), key=lambda k_v: -k_v[1]):
     print(k, round(prob, 3))
 ```
 
-> 01101 0.331
-> 10010 0.331
-> 01100 0.167
-> 10011 0.167
+> 10011 0.156
+> 01100 0.156
+> 01101 0.156
+> 10010 0.156
+> 00110 0.059
+> 11001 0.059
+> 01001 0.046
+> 10110 0.046
+> 10001 0.046
+> 01110 0.046
 
 本質的に同じ結果が得られた。
 
