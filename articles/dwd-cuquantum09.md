@@ -10,11 +10,13 @@ published: true
 
 [cuQuantum で遊んでみる (8) — QAOA の期待値計算高速化](/derwind/articles/dwd-cuquantum08) で大分計算周りをマシにしたのでもう少し本格的な計算をしてみたいというもの。
 
-~~なお、今回の計算、どこか間違えているようなのだが間違えているなりにそこそこ行けてそうなので、一旦記事にしてしまって後日修正したい。~~ 修正した[^1]。
+~~なお、今回の計算、どこか間違えているようなのだが間違えているなりにそこそこ行けてそうなので、一旦記事にしてしまって後日修正したい。~~ 修正した[^1]。再度修正した[^2]。
 
 [^1]: QUBO 式をイジング変数で書き直す時に式の変形を間違えていた。
 
-実験は Google Colab 上で T4 を使って行った。そんな手軽な環境で本格的な QAOA も VQE も実行できるのである。
+[^2]: QAOA の回路等々色々間違っていた。
+
+実験は ~~Google Colab 上で T4 を使って行った。~~ 時間がかかるので、途中からは A100@GCP を使った。とは言え、Google Colab 上で T4 でも可能なので、そんな手軽な環境で本格的な QAOA も VQE も実行できるのである。
 
 # お題
 
@@ -37,7 +39,8 @@ from scipy.optimize import minimize
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.circuit import ParameterVector
-from qiskit.primitives import Estimator
+from qiskit.circuit.library import QAOAAnsatz
+from qiskit.quantum_info import SparsePauliOp
 from qiskit_aer import AerSimulator
 
 import cupy as cp
@@ -142,41 +145,46 @@ ising_dict = dict(sorted(ising_dict.items(), key=lambda k_v: calc_key(k_v[0])))
 この辺は [cuQuantum で遊んでみる (6) — 最大カット問題と QUBO と QAOA](/derwind/articles/dwd-cuquantum06) と同様である。
 
 ```python
-n_reps = 3
+n_reps = 5
 
 def rzz(qc, theta, qubit1, qubit2):
     qc.cx(qubit1, qubit2)
     qc.rz(theta, qubit2)
     qc.cx(qubit1, qubit2)
 
-beta = ParameterVector("β", n_qubits * n_reps)
-gamma = ParameterVector("γ", len(ising_dict) * n_reps)
-beta_idx = iter(range(n_qubits * n_reps))
-bi = lambda: next(beta_idx)
-gamma_idx = iter(range(len(ising_dict) * n_reps))
-gi = lambda: next(gamma_idx)
+betas = ParameterVector("β", n_reps)
+beta_idx = iter(range(n_reps))
+
+def bi():
+    return next(beta_idx)
+
+gammas = ParameterVector("γ", n_reps)
+gamma_idx = iter(range(n_reps))
+
+def gi():
+    return next(gamma_idx)
 
 qc = QuantumCircuit(n_qubits)
 qc.h(qc.qregs[0][:])
 for _ in range(n_reps):
+    gamma = gammas[gi()]
+    param_names.append(gamma.name)
     for k in ising_dict:
         if len(k) == 1:
             left = k[0]
             ln = int(left[1:])
-            rn = None
+            qc.rz(gamma, ln)
         else:
             left, right = k
             ln = int(left[1:])
             rn = int(right[1:])
             assert ln <= rn
-
-        if rn is None:
-            qc.rz(gamma[gi()], ln)
-        else:
-            rzz(qc, gamma[gi()], ln, rn)
+            rzz(qc, gamma, ln, rn)
     qc.barrier()
+    beta = betas[bi()]
+    param_names.append(beta.name)
     for i in range(n_qubits):
-        qc.rx(beta[bi()], i)
+        qc.rx(beta, i)
 
 #qc.draw()
 ```
@@ -215,6 +223,8 @@ def to_hamiltonian(ising_dict):
 hamiltonian = to_hamiltonian(ising_dict)
 # 今回のハミルトニアンはごちゃごちゃした係数を持っている。
 coefficients = np.array(list(ising_dict.values()))
+# パラメータの bind 時に 2π を何周もする可能性があるので係数をスケールしておく。
+coefficients /= np.max(abs(coefficients))
 ```
 
 量子回路にダミーのハミルトニアンを与えて一旦、`cuTensorNet` のテンソルネットワークに変換してからハミルトニアンを差し替える。やや回路が深いので計算に少し時間がかかる。
@@ -234,29 +244,36 @@ for ham, locs in zip(hamiltonian, hamiltonian_locs):
     operands[locs] = ham
 ```
 
-> CPU times: user 2min 29s, sys: 351 ms, total: 2min 30s
-> Wall time: 2min 33s
+> CPU times: user 3.68 s, sys: 293 ms, total: 3.97 s
+> Wall time: 3.97 s
 
 `expr` の中身が酷くて、眺めてみると面白い。「食 (hamu)」の部分にハミルトニアンを埋め込んでいる。
 
 ![](/images/dwd-cuquantum09/001.png)
 
-コスト関数を定義する。
+コスト関数を定義する。ここは見た目上は厳密ではない。問題ハミルトニアンを $H_P = \sum_{i,j} k_{ij} Z_i \otimes Z_j$ とする時、パラメータ $\gamma_n$ が割り当たる部分は $\exp (- \frac{\gamma_n}{2} 2 k_{ij} Z_i \otimes Z_j)$ のようにハミルトニアンの係数 $k_{ij}$ が位相にかかるのであるが、このコードでは表現できていない。実際には `replace_pauli` の中に隠蔽しているのであるが、その詳細を書き出すと大変煩雑になるので割愛する。
 
 ```python
 param_names = [p.name for p in qc.parameters]
+
+losses = []
 
 def comnpute_expectation_tn(params, *args):
     expr, operands, pname2locs = args
     energy = 0.
 
     pname2theta = dict(zip(param_names, params))
+    # この中で、ハミルトニアンの係数を位相にかける処理も一緒にやっている。
     parameterized_operands = replace_pauli(operands, pname2theta, pname2locs)
 
     # 純粋な期待値と係数のアダマール積をとって加算する。
-    return np.sum(
+    energy = np.sum(
         cp.asnumpy(contract(expr, *parameterized_operands).real) * coefficients
     )
+
+    losses.append(energy)
+
+    return energy
 ```
 
 # 最適化を回す
@@ -283,28 +300,67 @@ print(f"opt value={round(result.fun, 3)}")
 ```
 
 > Maximum number of function evaluations has been exceeded.
-> opt value=-1.068
-> CPU times: user 1h 19min 46s, sys: 7min 12s, total: 1h 26min 59s
-> Wall time: 1h 27min 6s
+> opt value=-0.508
+> CPU times: user 1h 8min 56s, sys: 2min 31s, total: 1h 11min 27s
+> Wall time: 1h 11min 26s
 
-結構時間がかかったが、まだ常識的な範囲ではあろう。そろそろ途中経過の可視化を考えたほうが良い。コールバックから値を引っ張ってきて動的にグラフを書かせるか、`TensorBoard` を使うといったところか。
+(A100 でやったが) 結構時間がかかったが、まだ常識的な範囲ではあろう。そろそろ途中経過の可視化を考えたほうが良い。コールバックから値を引っ張ってきて動的にグラフを書かせるか、`TensorBoard` を使うといったところか。
 
 # 結果を考察する
 
-そこそこの規模だとメモリを圧迫するので、念のため `AerSimulator` をテンソルネットワークをバックエンドにして実行する。今回のケースは `shots` を大きくしてもわりとすぐに完了する。理由はよく分かっていない。
+そこそこの規模だとメモリを圧迫するので、念のため `AerSimulator` をテンソルネットワークをバックエンドにして実行する[^3]。今回のケースは `shots` を大きくしてもわりとすぐに完了する。理由はよく分かっていない。
+
+[^3]: 実際には全然そんなことはなくて、`cuStateVec` を使った状態ベクトルシミュレーションで全然問題ない。
 
 ```python
 %%time
 
-opt_qc = qc.bind_parameters(result.x)
-opt_qc.measure_all()
+def to_pauli_strings(hamiltonian: tuple[list[cp.ndarray]]):
+    I = cp.eye(2, dtype=complex)
+    Z = cp.array([[1, 0], [0, -1]], dtype=complex)
+
+    pauli_strings: list[str] = []
+    for ham in zip(*hamiltonian):
+        pauli_str = ""
+        for h in ham:
+            if cp.allclose(h, I):
+                pauli_str += "I"
+            elif cp.allclose(h, Z):
+                pauli_str += "Z"
+            else:
+                raise ValueError(f"{h} must be I or Z.")
+        pauli_strings.append(pauli_str)
+    return pauli_strings
+
+qubit_op = SparsePauliOp(
+    to_pauli_strings(hamiltonian),
+    coefficients,
+)
+
+initial_state_circuit = QuantumCircuit(n_qubits)
+initial_state_circuit.h(qc.qregs[0][:])
+
+ansatz = QAOAAnsatz(
+    cost_operator=qubit_op,
+    reps=n_reps,
+    initial_state=initial_state_circuit,
+    name='QAOA',
+    flatten=True,
+)
+
+# パラメータを Qiskit の回路の変数に割り当てるための関数
+mapping = make_pname2theta(result.x)
+parameter2value = {param: mapping[param.name] for param in ansatz.parameters}
+opt_ansatz = ansatz.bind_parameters(parameter2value)
+opt_ansatz.measure_all()
 
 sim = AerSimulator(device="GPU", method="tensor_network")
-counts = sim.run(opt_qc, shots=1024*50).result().get_counts()
+t_qc = transpile(opt_ansatz, backend=sim)
+counts = sim.run(t_qc, shots=1024*50).result().get_counts()
 ```
 
-> CPU times: user 1min 37s, sys: 566 ms, total: 1min 37s
-> Wall time: 1min 38s
+> CPU times: user 49.9 s, sys: 7.04 s, total: 56.9 s
+> Wall time: 27.5 s
 
 Qiskit は右が LSB なので、左を LSB にする形で上位 20 の結果を表示してみる。
 
@@ -316,33 +372,33 @@ for i, (k, n) in enumerate(sorted(counts.items(), key=lambda k_v: -k_v[1])):
     if n < 5:
         continue
     state = k[::-1]  # reverse order
-    print(state, n)
+    print(f"[{i:02}] {state} {n}")
     states.append(state)
     i += 1
     if i >= topk:
         break
 ```
 
-> 1011101110000100 13
-> 1011011110011101 12
-> 1100010000111111 11
-> 0001001000111110 11
-> 1010111010100011 11
-> 1010111011011011 11
-> 1101100011111000 10
-> 0101110011011010 10
-> 1100010000000100 10
-> 0000111111000101 10
-> 1110011110100000 10
-> 0000110011010001 10
-> 0000101011001111 10
-> 1100001100110110 10
-> 1000101110100000 10
-> 1000111111001110 9
-> 1011001001010111 9
-> 0111011101110100 9
-> 0111110110100000 9
-> 1000010111000001 9
+> [00] 1100111110111111 50
+> [01] 1001111101111111 37
+> [02] 1100111110111110 36
+> [03] 1101111101111111 36
+> [04] 1010111110111101 34
+> [05] 1001111101111010 34
+> [06] 1110111100111111 33
+> [07] 1101111101111110 32
+> [08] 0010111100111111 32
+> [09] 1101111101111100 32
+> [10] 1010111110111110 30
+> [11] 1100111110111101 30
+> [12] 1010111110111111 30
+> [13] 0010111100111110 29
+> [14] 1001110101111111 29
+> [15] 1110111100111110 28
+> [16] 1001111001111101 28
+> [17] 1001111101111100 28
+> [18] 1001111001111110 28
+> [19] 1010111110111011 28
 
 線形回帰の係数を求める関数。
 
@@ -390,9 +446,9 @@ plt.plot(x, y, color="red")
 plt.show()
 ```
 
-> 1011101110000100
-> a = 17.3046875
-> b = 0.515625
+> 1100111110111111
+> a = 18.0859375
+> b = 0.74609375
 
 ![](/images/dwd-cuquantum09/002.png)
 
@@ -401,12 +457,18 @@ plt.show()
 > a = 17.1875
 > b = 0.88671875
 
-らしいので、そこそこ良さそうである。因みに 6 番手の「1010111011011011」だと
+らしいので、そこそこ良さそうである。
 
-> a = 16.796875
-> b = 0.85546875
+最後にコストの動きも見てみよう。
 
-と言った感じで、より雰囲気が出る。要するに、top-1 が必ずしも最適解というわけではないという感じである。
+```python
+plt.figure()
+x = np.arange(0, len(losses), 1)
+plt.plot(x, losses, color="blue")
+plt.show()
+```
+
+![](/images/dwd-cuquantum09/003.png)
 
 # まとめ
 
