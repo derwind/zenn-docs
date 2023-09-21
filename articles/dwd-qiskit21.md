@@ -219,7 +219,7 @@ Ansatz を自分で実装するのも面倒くさいので Qiskit を用いて�
 
 ## Ansatz の定義
 
-`n_resp` が小さいと思うような解が得られないような気がしたので思い切って 10 にしたが、もっと削れるかもしれない。
+`n_reps` が小さいと思うような解が得られないような気がしたので思い切って 10 にしたが、もっと削れるかもしれない。
 
 ```python
 %%time
@@ -227,11 +227,11 @@ Ansatz を自分で実装するのも面倒くさいので Qiskit を用いて�
 initial_state_circuit = QuantumCircuit(n_qubits)
 initial_state_circuit.h(initial_state_circuit.qregs[0][:])
 
-n_resp = 10
+n_reps = 10
 
 ansatz = QAOAAnsatz(
     cost_operator=qubit_op,
-    reps=n_resp,
+    reps=n_reps,
     initial_state=initial_state_circuit,
     name='QAOA',
     flatten=True,
