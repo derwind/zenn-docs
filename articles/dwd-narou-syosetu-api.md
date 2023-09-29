@@ -3,7 +3,7 @@ title: "なろう小説API というものを呼んでみる"
 emoji: "📖"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "poem", "Web", "API"]
-published: false
+published: true
 ---
 
 # 目的
