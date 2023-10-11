@@ -2,8 +2,8 @@
 title: "Qiskit で遊んでみる (22) — "
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["Qiskit", "Python", "poem"]
-published: false
+topics: ["Qiskit", "Python", "cuQuantum", "poem"]
+published: true
 ---
 
 # 目的
