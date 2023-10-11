@@ -1,5 +1,5 @@
 ---
-title: "Qiskit で遊んでみる (22) — "
+title: "Qiskit で遊んでみる (22) — Google Colab 上で Qiskit Aer GPU"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python", "cuQuantum", "poem"]
