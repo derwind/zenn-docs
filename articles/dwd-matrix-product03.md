@@ -3,12 +3,12 @@ title: "行列積状態について考える (3)"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python"]
-published: false
+published: true
 ---
 
 # 目的
 
-行列積状態 (Matrix Product State; MPS) について以前 [行列積状態について考える (2)](/derwind/articles/dwd-matrix-product02) の続きとして、もっと一般のテンソルでの Tensor-Train 分解 (量子化学の分野などでの呼称は MPS) を考えたい。
+行列積状態 (Matrix Product State; MPS) について以前に書いた [行列積状態について考える (2)](/derwind/articles/dwd-matrix-product02) の続きとして、もっと一般のテンソルでの Tensor-Train 分解 (量子化学の分野などでの呼称は MPS) を考えたい。
 
 要するに [SIAM J. Sci. Comput., 33(5), 2295–2317. (23 pages) Tensor-Train Decomposition, I. V. Oseledets](https://www.researchgate.net/publication/220412263_Tensor-Train_Decomposition) の内容を実装したいということになる。
 
