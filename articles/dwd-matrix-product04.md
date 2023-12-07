@@ -3,7 +3,7 @@ title: "行列積状態について考える (4)"
 emoji: "⛓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python", "PyTorch"]
-published: false
+published: true
 ---
 
 # 目的
