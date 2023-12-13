@@ -66,12 +66,12 @@ $$
 \begin{align*}
 (\Psi_{\sigma_1, (\sigma_2 \sigma_3)})_{\sigma_1,(\sigma_2 \sigma_3)} &= U S V^\dagger \\
 &= U \begin{pmatrix} S_{00} & \\ & S_{11} \end{pmatrix} V^\dagger \\
-& = (\sum_{a_1 = 0}^1 U_{\sigma_1, a_1} S_{a_1, a_1} (V^\dagger)_{a_1, \sigma_2 \sigma_3})_{\sigma_1,(\sigma_2 \sigma_3)},
+& = (\sum_{a_1 = 0}^{r_1 - 1} U_{\sigma_1, a_1} S_{a_1, a_1} (V^\dagger)_{a_1, \sigma_2 \sigma_3})_{\sigma_1,(\sigma_2 \sigma_3)},
 \tag{31.5}
 \end{align*}
 $$
 
-となる。単に行列の各成分について SVD の結果の計算を陽に書いただけである。
+となる。単に行列の各成分について SVD の結果の計算を陽に書いただけである。ここで $r_1$ は特異値からなる対角行列 $S$ のランクである。
 
 $S V^\dagger$ の部分を掛けて、これをベクトルへと `flatten` したい。
 
@@ -94,8 +94,8 @@ $$
 \begin{align*}
 \begin{split}
 (\Psi_{\sigma_1, (\sigma_2 \sigma_3)})_{\sigma_1,(\sigma_2 \sigma_3)} &= U S V^\dagger \\
-&= (\sum_{a_1 = 0}^1 U_{\sigma_1, a_1} S_{a_1, a_1} (V^\dagger)_{a_1, \sigma_2 \sigma_3})_{\sigma_1,(\sigma_2 \sigma_3)} \\
-&\simeq (\sum_{a_1 = 0}^1 U_{\sigma_1, a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
+&= (\sum_{a_1 = 0}^{r_1 - 1} U_{\sigma_1, a_1} S_{a_1, a_1} (V^\dagger)_{a_1, \sigma_2 \sigma_3})_{\sigma_1,(\sigma_2 \sigma_3)} \\
+&\simeq (\sum_{a_1 = 0}^{r_1 - 1} U_{\sigma_1, a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
 \end{split}
 \tag{32}
 \end{align*}
@@ -119,8 +119,8 @@ $$
 \begin{align*}
 \begin{split}
 (c_{\sigma_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} &\simeq (\Psi_{\sigma_1, (\sigma_2 \sigma_3)})_{\sigma_1,(\sigma_2 \sigma_3)} \\
-&\simeq (\sum_{a_1 = 0}^1 U_{\sigma_1, a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
-&\simeq (\sum_{a_1 = 0}^1 A^{\sigma_1}_{a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
+&\simeq (\sum_{a_1 = 0}^{r_1 - 1} U_{\sigma_1, a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
+&\simeq (\sum_{a_1 = 0}^{r_1 - 1} A^{\sigma_1}_{a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
 \end{split}
 \tag{32.5}
 \end{align*}
@@ -148,8 +148,8 @@ $$
 $$
 \begin{align*}
 \begin{split}
-(c_{\sigma_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} &\simeq (\sum_{a_1 = 0}^1 A^{\sigma_1}_{a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
-&\simeq (\sum_{a_1 = 0}^1 A^{\sigma_1}_{a_1} \Psi_{(a_1 \sigma_2), \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} 
+(c_{\sigma_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} &\simeq (\sum_{a_1 = 0}^{r_1 - 1} A^{\sigma_1}_{a_1} c_{a_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
+&\simeq (\sum_{a_1 = 0}^{r_1 - 1} A^{\sigma_1}_{a_1} \Psi_{(a_1 \sigma_2), \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} 
 \end{split}
 \tag{33}
 \end{align*}
@@ -160,9 +160,11 @@ $$
 $$
 \begin{align*}
 (\Psi_{(a_1 \sigma_2), \sigma_3})_{(a_1 \sigma_2), \sigma_3} &= USV^\dagger \\
-&= (\sum_{a_2 = 0}^1 U_{(a_1 \sigma_2), a_2} S_{a_2, a_2} (V^\dagger)_{a_2, \sigma_3})_{(a_1 \sigma_2), \sigma_3},
+&= (\sum_{a_2 = 0}^{r_2 - 1} U_{(a_1 \sigma_2), a_2} S_{a_2, a_2} (V^\dagger)_{a_2, \sigma_3})_{(a_1 \sigma_2), \sigma_3},
 \end{align*}
 $$
+
+ここで、$r_2$ は $S$ のランクである。
 
 これを式 (33) に代入して
 
@@ -172,8 +174,8 @@ $$
 (c_{\sigma_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
 &\simeq
 (\Psi_{\sigma_1, (\sigma_2 \sigma_3)})_{\sigma_1, (\sigma_2 \sigma_3)} \\
-&\simeq (\sum_{a_1 = 0}^1 A^{\sigma_1}_{a_1} \sum_{a_2 = 0}^1 U_{(a_1 \sigma_2), a_2} S_{a_2, a_2} (V^\dagger)_{a_2, \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
-&= (\sum_{a_1 = 0}^1 \sum_{a_2 = 0}^1 A^{\sigma_1}_{a_1} U_{(a_1 \sigma_2), a_2} S_{a_2, a_2} (V^\dagger)_{a_2, \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
+&\simeq (\sum_{a_1 = 0}^{r_1 - 1} A^{\sigma_1}_{a_1} \sum_{a_2 = 0}^{r_2 - 1} U_{(a_1 \sigma_2), a_2} S_{a_2, a_2} (V^\dagger)_{a_2, \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
+&= (\sum_{a_1 = 0}^{r_1 - 1} \sum_{a_2 = 0}^{r_2 - 1} A^{\sigma_1}_{a_1} U_{(a_1 \sigma_2), a_2} S_{a_2, a_2} (V^\dagger)_{a_2, \sigma_3})_{\sigma_1 \sigma_2 \sigma_3}
 \end{split}
 \tag{33.5}
 \end{align*}
@@ -244,8 +246,8 @@ $$
 $$
 \begin{align*}
 \begin{split}
-(c_{\sigma_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} &\simeq (\sum_{a_1 = 0}^1 A^{\sigma_1}_{a_1} \Psi_{(a_1 \sigma_2), \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
-&\simeq (\sum_{a_1 = 0}^1 \sum_{a_2 = 0}^1 A^{\sigma_1}_{a_1} A^{\sigma_2}_{a_1, a_2} A^{\sigma_3}_{a_2})_{\sigma_1 \sigma_2 \sigma_3}
+(c_{\sigma_1 \sigma_2 \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} &\simeq (\sum_{a_1 = 0}^{r_1 - 1} A^{\sigma_1}_{a_1} \Psi_{(a_1 \sigma_2), \sigma_3})_{\sigma_1 \sigma_2 \sigma_3} \\
+&\simeq (\sum_{a_1 = 0}^{r_1 - 1} \sum_{a_2 = 0}^{r_2 - 1} A^{\sigma_1}_{a_1} A^{\sigma_2}_{a_1, a_2} A^{\sigma_3}_{a_2})_{\sigma_1 \sigma_2 \sigma_3}
 \end{split}
 \tag{34}
 \end{align*}
@@ -283,8 +285,8 @@ def bin_list2index(li: list[int]):
 c = np.random.randn(d**L)  # vector; (30)
 
 Psi1 = c.reshape(d, d**(L-1))  # matrix; (31)
-U, s, Vh = sp.linalg.svd(Psi1)  # (32)
-r1 = len(s); U = U[:, :r1]; Vh = Vh[:r1, :]  # (32)
+U, s, Vh = sp.linalg.svd(Psi1, full_matrices=False)  # (32)
+r1 = len(s[s != 0]); U = U[:, :r1]; s = s[:r1]; Vh = Vh[:r1, :]  # (32)
 A1 = np.split(U.flatten(), d)  # a collection of d row vectors
 
 c_ = (np.diag(s) @ Vh).flatten()  # reshape back into a vector; for (33)
@@ -320,9 +322,9 @@ print(np.allclose(c, test_c))
 式 (34)～(35) は以下のようになる:
 
 ```python
-U_, s_, Vh_ = sp.linalg.svd(Psi12)
-r2 = len(s_); U_ = U_[:, :r2]; Vh_ = Vh_[:r2, :]
-A12 = U_.reshape(2, 2, 2).transpose(1, 0, 2)  # a collection of d matrices
+U_, s_, Vh_ = sp.linalg.svd(Psi12, full_matrices=False)
+r2 = len(s_[s_ != 0]); U_ = U_[:, :r2]; s_ = s_[:r2]; Vh_ = Vh_[:r2, :]
+A12 = U_.reshape(r1, d, r2).transpose(1, 0, 2)  # a collection of d matrices
 c_ = (np.diag(s_) @ Vh_)
 A2 = c_.T  # two "column" vectors
 
@@ -398,18 +400,38 @@ print([vec.T for vec in A2])
 ```
 
 ```
-[array([1., 0.]), array([0., 1.])]
+[array([1.]), array([0.])]
 ----------
-[[[1. 0.]
-  [0. 0.]]
+[[[1.]]
 
- [[0. 1.]
-  [0. 0.]]]
+ [[0.]]]
 ----------
-[array([1., 0.]), array([0., 0.])]
+[array([1.]), array([0.])]
 ```
 
 これが論文によるところの $\ket{000}$ の MPS らしい。
+
+## $\frac{1}{\sqrt{2}}(\ket{000} + \ket{111})$ で試す
+
+結果だけ書くと、以下のようになるらしい。今回は結合次元が 2 になった。
+
+```
+[array([1., 0.]), array([0., 1.])]
+----------
+[[[ 1.  0.]
+  [ 0.  0.]]
+
+ [[ 0.  0.]
+  [ 0. -1.]]]
+----------
+[array([0.70710678, 0.        ]), array([ 0.        , -0.70710678])]
+```
+
+論文の (23) 式の下に
+
+> It is obvious that $r = 1$ corresponds to (classical) product states and $r > 1$ to entangled (quantum) states.
+
+とあって、上記のようにもつれ状態の場合、結合次元が 1 より大きくなるということらしい。
 
 # まとめ
 
