@@ -1,5 +1,5 @@
 ---
-title: "行列積状態について考える (5)"
+title: "行列積状態について考える (5) — ニューラルネットワークのモデル圧縮"
 emoji: "⛓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python"]
@@ -8,7 +8,7 @@ published: false
 
 # 目的
 
-[行列積状態について考える (3)](/derwind/articles/dwd-matrix-product03) の続きとして、ニューラルネットワークのパラメータ圧縮について考えたい。[arXiv:1509:06569 Tensorizing Neural Networks](https://arxiv.org/abs/1509.06569) に沿って考えたい。
+[行列積状態について考える (3)](/derwind/articles/dwd-matrix-product03) の続きとして、ニューラルネットワークのモデル圧縮について考えたい。[arXiv:1509:06569 Tensorizing Neural Networks](https://arxiv.org/abs/1509.06569) に沿って考えたい。
 
 # 全結合層と TT-層
 
@@ -73,7 +73,7 @@ $$
 
 を得る。このように変形した全結合層を論文では「TT-層」と呼んでいる。
 
-Tensor-Train 中の各結合の次元を $r_1$, $r_2$, $r_3$, $r_4$, $r_5$ より小さくするとパラメータ数を削減できる、つまりニューラルネットワークの「枝刈り」の一種を実現できる。
+Tensor-Train 中の各結合の次元を $r_1$, $r_2$, $r_3$, $r_4$ より小さくするとパラメータ数を削減できる、つまりニューラルネットワークの「プルーニング」「モデル圧縮」の一種を実現できる。
 
 # 実装
 
@@ -210,3 +210,198 @@ print(f"{np.allclose(answer, val2)=}")
 > np.allclose(answer, val2)=True
 
 この時点ではパラメータ数も変化していないし、計算結果も元のものと一致している。
+
+## 重み行列 `W` を TT-分解する
+
+次に `W` を TT-分解する。
+
+```python
+tt_W = TT_SVD(W, [3, 12, 6])
+print("tt_W:", [v.shape for v in tt_W])
+
+print(f"num of params={np.sum([np.prod(v.shape) for v in tt_W]) + np.prod(B.shape)}")
+
+W1 = np.einsum("ic,cjd,dke,el->ijkl", *tt_W)
+
+print(f"{np.allclose(W, W1)=}")
+```
+
+> tt_W: [(3, 3), (3, 4, 12), (12, 5, 6), (6, 6)]
+> num of params=561
+> np.allclose(W, W1)=True
+
+テンソル `W` と Tensor-Train `tt_W` は本質的には同じものであるが、パラメータ数が増えてしまった。厳密な値を再現できる状態だと結合部の分だけパラメータが増えてしまう。
+
+続けて、TT-層としての計算を実行してみる。
+
+```python
+val3 = np.einsum("Nkl,ic,cjd,dke,el->Nij", X, *tt_W) + B
+val3 = val3.reshape(batch_dim, -1)
+print(f"{np.allclose(answer, val3)=}")
+print(f"max diff={np.round(np.max(np.abs(answer - val3)), 5)}")
+```
+
+> np.allclose(answer, val3)=True
+> max diff=0.0
+
+元の `x @ w.T + b` の計算と値が一致した。
+
+# 低ランク近似
+
+このままだとパラメータ数が増えただけで計算結果も変わらないという、何も旨味がない状態である。ところが、Tensor-Train の結合部の次元を $r_1$, $r_2$, ... より小さくすることで近似計算をすると共にパラメータ削減ができる。これを見てみよう。
+
+今回、重み行列を 4 階のテンソルにしてから TT-分解しているので、結合部の個数は 3 つで、元のテンソルを復元できる TT-ランクは `(3, 12, 6)` である。真ん中の TT-ランクを 12 から徐々に減らしてみよう。
+
+```python
+for dim in range(12, 5, -1):
+    tt_W1 = TT_SVD(W, [3, dim, 6])
+    print("tt_W1:", [v.shape for v in tt_W1])
+
+    print(f"num of params={np.sum([np.prod(v.shape) for v in tt_W1]) + np.prod(B.shape)}")
+
+    val4 = np.einsum("Nkl,ic,cjd,dke,el->Nij", X, *tt_W1) + B
+    val4 = val4.reshape(batch_dim, -1)
+    print(f"{np.allclose(answer, val4)=} for {dim=}")
+    print(f"max diff={np.round(np.max(np.abs(answer - val4)), 5)} for {dim=}")
+    print()
+```
+
+> tt_W1: [(3, 3), (3, 4, 12), (12, 5, 6), (6, 6)]
+> num of params=561
+> np.allclose(answer, val4)=True for dim=12
+> max diff=0.0 for dim=12
+> 
+> tt_W1: [(3, 3), (3, 4, 11), (11, 5, 6), (6, 6)]
+> num of params=519
+> np.allclose(answer, val4)=False for dim=11
+> max diff=2.46626 for dim=11
+> 
+> tt_W1: [(3, 3), (3, 4, 10), (10, 5, 6), (6, 6)]
+> num of params=477
+> np.allclose(answer, val4)=False for dim=10
+> max diff=3.92577 for dim=10
+> 
+> tt_W1: [(3, 3), (3, 4, 9), (9, 5, 6), (6, 6)]
+> num of params=435
+> np.allclose(answer, val4)=False for dim=9
+> max diff=3.57042 for dim=9
+> 
+> tt_W1: [(3, 3), (3, 4, 8), (8, 5, 6), (6, 6)]
+> num of params=393
+> np.allclose(answer, val4)=False for dim=8
+> max diff=5.37306 for dim=8
+> 
+> tt_W1: [(3, 3), (3, 4, 7), (7, 5, 6), (6, 6)]
+> num of params=351
+> np.allclose(answer, val4)=False for dim=7
+> max diff=6.59231 for dim=7
+> 
+> tt_W1: [(3, 3), (3, 4, 6), (6, 5, 6), (6, 6)]
+> num of params=309
+> np.allclose(answer, val4)=False for dim=6
+> max diff=6.45532 for dim=6
+
+下 2 つのケースでは元のパラメータ数 372 よりも小さくなっている。その代わりに代償として計算誤差も大きくなっている。どこまで計算精度を求めつつ、どこまでパラメータ数を削減したいかのトレードオフであろう。
+
+# オマケ (量子状態の MPS 表現)
+
+[行列積状態について考える (2)](/derwind/articles/dwd-matrix-product02) の頃には量子状態を扱っていたのに、気が付いたらニューラルネットワークになっていた。
+
+折角なので、`TT_SVD` を量子状態にも適用して MPS 表現を見てみよう。
+
+まずは準備をする。
+
+```python
+ket_ZERO = np.array([1, 0], dtype=float)
+ket_ONE = np.array([0, 1], dtype=float)
+```
+
+## $\ket{000}$ で試す
+
+まず、状態ベクトルを用意する。
+
+```python
+state_000 = state_000 = np.kron(np.kron(ket_ZERO, ket_ZERO), ket_ZERO)
+state_000
+```
+
+> array([1., 0., 0., 0., 0., 0., 0., 0.])
+
+次に、TT-分解をしてみる。
+
+```python
+mps_state_000 = TT_SVD(state_000.reshape(2, 2, 2))
+print([v.shape for v in mps_state_000])
+mps_state_000
+```
+
+> [(2, 1), (1, 2, 1), (1, 2)]
+> [array([[1.],
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0.]]),
+>&nbsp;array([[[1.],
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0.]]]),
+>&nbsp;array([[1., 0.]])]
+
+多少見た目は違うが [行列積状態について考える (2)](/derwind/articles/dwd-matrix-product02) で得た結果に対応しているように思う。
+
+以下の縮約計算で元の状態ベクトルを復元できる。
+
+```python
+np.einsum("ia,ajb,bk->ijk", *mps_state_000).flatten()
+```
+
+> array([1., 0., 0., 0., 0., 0., 0., 0.])
+
+## $\frac{1}{\sqrt{2}}(\ket{000} + \ket{111})$ で試す
+
+同様に状態ベクトルを用意する。
+
+```python
+state_111 = np.kron(np.kron(ket_ONE, ket_ONE), ket_ONE)
+state_ghz = (state_000 + state_111) / np.sqrt(2)
+state_ghz
+```
+
+> array([0.70710678, 0.        , 0.        , 0.        , 0.        , 0.        , 0.        , 0.70710678])
+
+次に、TT-分解をしてみる。
+
+```python
+mps_state_ghz = TT_SVD(state_ghz.reshape(2, 2, 2))
+print([v.shape for v in mps_state_ghz])
+mps_state_ghz
+```
+
+> [(2, 2), (2, 2, 2), (2, 2)]
+> [array([[1., 0.],
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0., 1.]]),
+>&nbsp;array([[[ 1.,  0.],
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ 0.,  0.]],
+>&nbsp;
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[[ 0.,  0.],
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ 0., -1.]]]),
+> &nbsp;array([[ 0.70710678,  0.        ],
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ 0.        , -0.70710678]])]
+
+こちらも [行列積状態について考える (2)](/derwind/articles/dwd-matrix-product02) で得た結果に対応しているように思う。
+
+以下の縮約計算で元の状態ベクトルを復元できる。
+
+```python
+np.einsum("ia,ajb,bk->ijk", *mps_state_ghz).flatten()
+```
+
+> array([0.70710678, 0.        , 0.        , 0.        , 0.        , 0.        , 0.        , 0.70710678])
+
+# まとめ
+
+[arXiv:1509:06569 Tensorizing Neural Networks](https://arxiv.org/abs/1509.06569) に従う形で、ニューラルネットワークの全結合層を TT-分解を通じて「TT-層」に変換して縮約による順伝播計算をして、通常の線型代数の計算と一致することを確認した。
+
+また、結合次元を下げることでモデル圧縮ができるが、代償として誤差が大きくなることを確認した。
+
+この TT-分解を量子の状態ベクトルに適用すると、既に見た MPS 表現が得られることも確認した。
+
+# 参考文献
+[O] [Tensor-Train Decomposition, SIAM J. Sci. Comput., 33(5), 2295–2317. (23 pages), I. V. Oseledets](https://www.researchgate.net/publication/220412263_Tensor-Train_Decomposition)
+[S] [The density-matrix renormalization group in the age of matrix product states, arXiv:1008.3477, Ulrich Schollwoeck](https://arxiv.org/abs/1008.3477)
+[NPOV] [Tensorizing Neural Networks, arXiv:1509.06569, Alexander Novikov, Dmitry Podoprikhin, Anton Osokin, Dmitry Vetrov](https://arxiv.org/abs/1509.06569)
