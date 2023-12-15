@@ -2,8 +2,8 @@
 title: "行列積状態について考える (5) — ニューラルネットワークのモデル圧縮"
 emoji: "⛓"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["math", "Python"]
-published: false
+topics: ["math", "Python", "機械学習"]
+published: true
 ---
 
 # 目的
