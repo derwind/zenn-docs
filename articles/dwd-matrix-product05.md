@@ -321,7 +321,7 @@ ket_ONE = np.array([0, 1], dtype=float)
 まず、状態ベクトルを用意する。
 
 ```python
-state_000 = state_000 = np.kron(np.kron(ket_ZERO, ket_ZERO), ket_ZERO)
+state_000 = np.kron(np.kron(ket_ZERO, ket_ZERO), ket_ZERO)
 state_000
 ```
 
