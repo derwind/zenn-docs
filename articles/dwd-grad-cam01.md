@@ -3,7 +3,7 @@ title: "ニューラルネットの説明可能性について考える (1) — 
 emoji: "⛓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習"]
-published: false
+published: true
 ---
 
 # 目的
