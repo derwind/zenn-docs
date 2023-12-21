@@ -48,7 +48,7 @@ from torchvision import datasets, transforms
 
 で必要なモジュールを import する。
 
-## Tensor-Train っぽう雰囲気のネットワークの定義
+## Tensor-Train っぽい雰囲気のネットワークの定義
 
 次に、何となく行列を Tensor-Train 分解したっぽい雰囲気のネットワークを作成する。
 
