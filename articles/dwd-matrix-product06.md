@@ -3,7 +3,7 @@ title: "行列積状態について考える (6) — Vidal の標準形"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python", "Qiskit"]
-published: false
+published: true
 ---
 
 # 目的
