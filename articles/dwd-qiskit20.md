@@ -104,14 +104,12 @@ print(result)
 
 # Qiskit (QAOA) で解いてみる
 
-ここからが本題の「書籍のコードのアップデート」になる。まずは必要なパッケージをインストールする。諸事情というか Qiskit Optimization 0.6.0 を使うのだが、正式にはリリースされていないバージョンなので、GitHub からインストールする。
+ここからが本題の「書籍のコードのアップデート」になる。まずは必要なパッケージをインストールする。~~諸事情というか Qiskit Optimization 0.6.0 を使うのだが、正式にはリリースされていないバージョンなので、GitHub からインストールする。~~ 2023年11月14日に正式に Qiskit Optimization 0.6.0 がリリースされたので普通に pip でインストールできる。
 
 ## QUBO の準備
 
 ```sh
-! pip install qiskit pylatexenc
-! pip uninstall -y qiskit-optimization
-! pip install git+https://github.com/qiskit-community/qiskit-optimization.git
+! pip install qiskit qiskit-optimization pylatexenc
 ```
 
 必要なモジュールを import する。
