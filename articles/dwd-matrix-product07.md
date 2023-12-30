@@ -3,7 +3,7 @@ title: "行列積状態について考える (7) — QAOA ともつれ量"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python", "Qiskit", "量子機械学習"]
-published: false
+published: true
 ---
 
 # 目的
