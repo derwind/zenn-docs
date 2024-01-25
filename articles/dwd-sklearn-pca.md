@@ -3,7 +3,7 @@ title: "scikit-learn の PCA で GPU を活用する"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習"]
-published: false
+published: true
 ---
 
 # 目的
