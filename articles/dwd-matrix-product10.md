@@ -3,7 +3,7 @@ title: "行列積状態について考える (10) — 50 量子ビットの期�
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python", "Qiskit", "TensorNetwork", "cuQuantum"]
-published: false
+published: true
 ---
 
 # 目的
