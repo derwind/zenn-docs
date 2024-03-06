@@ -3,7 +3,7 @@ title: "NumPy もどきを作る (1)"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python", "numpy"]
-published: false
+published: true
 ---
 
 # 目的
