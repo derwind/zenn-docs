@@ -3,7 +3,7 @@ title: "行列積状態について考える (11) — NumPy を使わずに 50 �
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "Python", "numpy", "TensorNetwork"]
-published: false
+published: true
 ---
 
 # 目的
