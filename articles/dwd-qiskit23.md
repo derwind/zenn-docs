@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (23) — 最新の Qiskit で量子化学計�
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python"]
-published: false
+published: true
 ---
 
 # 目的
