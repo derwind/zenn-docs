@@ -3,7 +3,7 @@ title: "Qiskit で遊んでみる (24) — Qiskit Runtime local testing mode を
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python"]
-published: false
+published: true
 ---
 
 # 目的
