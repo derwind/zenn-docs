@@ -3,7 +3,7 @@ title: "typst の環境を WSL 上に作る (1)"
 emoji: "🛠"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Windows", "WSL2", "typst"]
-published: false
+published: true
 ---
 
 # 目的
