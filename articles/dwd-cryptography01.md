@@ -3,7 +3,7 @@ title: "暗号について考えてみる (1)"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python", "poem"]
-published: false
+published: true
 ---
 
 # 目的
