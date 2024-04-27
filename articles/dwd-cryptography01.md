@@ -234,7 +234,7 @@ attempt = 0
 while not factor_found:
     attempt += 1
     print("\nAttempt %i:" % attempt)
-    phase = qpe_amod35(a) # 位相 = s/r
+    phase = qpe_amod35(a)  # 位相 = s/r
     frac = Fraction(phase).limit_denominator(35)
     r = frac.denominator  # s/r の分母 r はこれだろうという値
     print("Result: r = %i" % r)
@@ -294,4 +294,4 @@ def ctrl_9_mod35(power):
 [NC2] [量子コンピュータと量子通信II －量子コンピュータとアルゴリズム－](https://shop.ohmsha.co.jp/shop/shopdetail.html?brandcode=000000006440)  
 [L] A. K. Lenstra and H. W. Lenstra, Jr. The development of the number field sieve. Lecture Notes in Mathematics, vol.1554. Springer-Verlag, Berlin, 1993.  
 [QND] [Quantum Native Dojo － 位相推定アルゴリズム（入門編）](https://dojo.qulacs.org/ja/latest/notebooks/2.4_phase_estimation_beginner.html)  
-[QT] [Qiskit Textbook (beta) － ショアのアルゴリズム](https://github.com/Qiskit/platypus/blob/main/translations/ja/v2/ch-algorithms/shor.ipynb)
+[QT] [Qiskit Textbook (beta) － Shor's Algorithm](https://github.com/Qiskit/platypus/blob/main/notebooks/v2/ch-algorithms/shor.ipynb)
