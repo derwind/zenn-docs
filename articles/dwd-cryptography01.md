@@ -92,7 +92,7 @@ O \left( \exp \left[ \frac{64}{9} n (\log n)^2 \right]^{1/3} \right)
 \end{align*}
 $$
 
-という準指数関数的な計算量になるそうである。対して、量子計算を活用した Shor のアルゴリズムは $n$ に対して多項式時間で素因数分解問題を解けるとのことである。
+という準指数関数的な計算量になるそうである。公開鍵$N$ は 400 桁以上が想定されているので、数体篩法で素因数分解しようとするととてもではないが計算が終わらない・・・ということになる (はず)。対して、量子計算を活用した Shor のアルゴリズムは $n$ に対して多項式時間で素因数分解問題を解けるとのことである。
 
 **現実的な時間で素因数分解できないという前提のもとで設計された暗号方式のアルゴリズムであったので、現実的な時間で解かれると根底が崩れる**わけである。
 
@@ -168,13 +168,12 @@ $$
 \begin{align*}
 \ket{0}^{\otimes n} \ket{1} &= \ket{0}^{\otimes n} \left( \frac{1}{\sqrt{r}} \sum_{s=0}^{r-1} \ket{u_s} \right) \\
 &= \frac{1}{\sqrt{r}} \sum_{s=0}^{r-1} \ket{0}^{\otimes n}\ket{u_s} \\
-&\xrightarrow[]{\text{QPE}} \frac{1}{\sqrt{r}} \sum_{s=0}^{r-1} \ket{\theta_s}\ket{u_s} \\
-&= \left(\frac{1}{\sqrt{r}} \sum_{s=0}^{r-1} \ket{\theta_s} \right) \ket{u_s}
+&\xrightarrow[]{\text{QPE}} \frac{1}{\sqrt{r}} \sum_{s=0}^{r-1} \ket{\theta_s}\ket{u_s}
 \tag{2}
 \end{align*}
 $$
 
-ここで、$\theta_s = s/r$ である。よって、上位 $n$ ビットは位相（の近似値）が重ね合わさったような状態になっている。
+ここで、$\theta_s = s/r$ である。よって、上位 $n$ ビットは位相 $\theta_s$（の近似値）が重ね合わさったような状態になっている。
 
 # 実装
 
@@ -192,7 +191,7 @@ from math import gcd
 from fractions import Fraction
 ```
 
-$9^k \mod 35$ を “掛け算” 作用させるゲート $U$ の制御ゲート版 $CU$ を実装する。(一旦詳細は省略)
+「$9 \mod 35$ を “掛け算” 作用させるゲート $U$」の任意の $s$ 乗 $U^s$ の制御ゲート版 $C-U^s$ を実装する。(一旦詳細は省略)
 
 ```python
 def ctrl_9_mod35(power):
