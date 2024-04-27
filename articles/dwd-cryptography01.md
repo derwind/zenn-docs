@@ -84,7 +84,7 @@ print(dec_text)
 
 # $n$ 桁の整数の素因数分解
 
-例えば文献 [NC2] p.103 によると、文献 [L] に解説がある Lenstra による提案された「数体篩法 (すうたいふるいほう)」というものが知られている中では大変高速な素因数分解のアルゴリズムとのことである。文献 [Q] によると、
+例えば文献 [NC2] p.103 によると、文献 [L] に解説がある Lenstra による提案された「数体篩法 (すうたいふるいほう)」というものが知られている中では大変高速な素因数分解のアルゴリズムとのことである。文献 [QND] によると、
 
 $$
 \begin{align*}
@@ -98,11 +98,11 @@ $$
 
 # Shor のアルゴリズム
 
-折角なので、文献 [S] に従いながら 35 を素因数分解したい[^3]。Alice のメッセージは攻撃を受けてしまうのであろうか？
+折角なので、文献 [QT] に従いながら 35 を素因数分解したい[^3]。Alice のメッセージは攻撃を受けてしまうのであろうか？
 
 [^3]: 相当なインチキをするが、よくある 15 の素因数分解よりは何かやっている気持ちになれそうな気がする。
 
-細かいことは文献 [S] に書いてあるので、ここではざっと流す。以下のような量子回路を実装する。
+細かいことは文献 [QT] に書いてあるので、ここではざっと流す。以下のような量子回路を実装する。
 
 ![](/images/dwd-cryptography01/001.png)
 
@@ -124,7 +124,7 @@ $$
 
 では、上記の量子位相推定の回路はどういうユニタリゲートの固有値を求めているのか？そして固有ベクトルがどうやって求まるのか？という話である。
 
-さて、文献 [S] から答えを引っ張ってくると、$U$ は状態ベクトル $\ket{y}$ に対して
+さて、文献 [QT] から答えを引っ張ってくると、$U$ は状態ベクトル $\ket{y}$ に対して
 
 $$
 \begin{align*}
@@ -177,7 +177,7 @@ $$
 
 # 実装
 
-必要なモジュールを import する。以下、本質的には文献 [S] のままである。
+必要なモジュールを import する。以下、本質的には文献 [QT] のままである。
 
 ```python
 import time
@@ -293,5 +293,5 @@ def ctrl_9_mod35(power):
 [S] [澤田秀樹, 暗号理論と代数学, 海文堂出版, 1997.](https://www.kaibundo.jp/1997/01/72330/)  
 [NC2] [量子コンピュータと量子通信II －量子コンピュータとアルゴリズム－](https://shop.ohmsha.co.jp/shop/shopdetail.html?brandcode=000000006440)  
 [L] A. K. Lenstra and H. W. Lenstra, Jr. The development of the number field sieve. Lecture Notes in Mathematics, vol.1554. Springer-Verlag, Berlin, 1993.  
-[Q] [Quantum Native Dojo － 位相推定アルゴリズム（入門編）](https://dojo.qulacs.org/ja/latest/notebooks/2.4_phase_estimation_beginner.html)  
-[S] [Qiskit Textbook (beta) － ショアのアルゴリズム](https://github.com/Qiskit/platypus/blob/main/translations/ja/v2/ch-algorithms/shor.ipynb)
+[QND] [Quantum Native Dojo － 位相推定アルゴリズム（入門編）](https://dojo.qulacs.org/ja/latest/notebooks/2.4_phase_estimation_beginner.html)  
+[QT] [Qiskit Textbook (beta) － ショアのアルゴリズム](https://github.com/Qiskit/platypus/blob/main/translations/ja/v2/ch-algorithms/shor.ipynb)
