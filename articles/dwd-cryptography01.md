@@ -118,7 +118,7 @@ U \ket{v} = \exp(2 \pi i \theta) \ket{\psi}
 \end{align*}
 $$
 
-ここで、量子位相推定の回路は、$\ket{0}^{\otimes n} \ket{\psi}$ で初期化された状態に対して、前半の階段状のゲートを適用すると、**形式的には** $(\operatorname{QFT}\ket{\theta}) \otimes \ket{\psi}$ になるという巧みな回路だ。ここで、$\operatorname{QFT}$ は量子 Fourier 変換である。よって、この状態の “上の部分” に逆量子 Fourier 変換を作用させると、$(\operatorname{QFT}^{-1} \otimes I) ((\operatorname{QFT}\ket{\theta}) \otimes \ket{\psi}) = \ket{\theta} \times \ket{\psi}$ となるので、“上の部分” を測定すると $\theta$ が求まるというカラクリである。なお、実際には $\theta$ の 2 進展開の近似値が求まる形で、$H$ ゲートを適用している量子ビットの個数 $n$ が 2 進数としての桁数に対応する。
+ここで、量子位相推定の回路は、$\ket{0}^{\otimes n} \ket{\psi}$ で初期化された状態に対して、前半の階段状のゲートを適用すると、**形式的には** $(\operatorname{QFT}\ket{\theta}) \otimes \ket{\psi}$ になるという巧みな回路だ。ここで、$\operatorname{QFT}$ は量子 Fourier 変換である。よって、この状態の “上の部分” に逆量子 Fourier 変換を作用させると、$(\operatorname{QFT}^{-1} \otimes I) ((\operatorname{QFT}\ket{\theta}) \otimes \ket{\psi}) = \ket{\theta} \otimes \ket{\psi}$ となるので、“上の部分” を測定すると $\theta$ が求まるというカラクリである。なお、実際には $\theta$ の 2 進展開の近似値が求まる形で、$H$ ゲートを適用している量子ビットの個数 $n$ が 2 進数としての桁数に対応する。
 
 ## 閑話休題、Shor のアルゴリズム
 
