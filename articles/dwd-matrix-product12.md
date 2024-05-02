@@ -3,7 +3,7 @@ title: "行列積状態について考える (12) — テンソルネットワ�
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "PyTorch", "TensorNetwork"]
-published: false
+published: true
 ---
 
 # 目的
