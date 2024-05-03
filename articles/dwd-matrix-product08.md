@@ -25,7 +25,6 @@ published: true
 from __future__ import annotations
 from typing import Sequence
 import numpy as np
-import tensorly as tl
 
 from qiskit import QuantumCircuit
 from qiskit.quantum_info.random import random_statevector
