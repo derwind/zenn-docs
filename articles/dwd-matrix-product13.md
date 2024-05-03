@@ -3,7 +3,7 @@ title: "行列積状態について考える (13) — シンボリック計算"
 emoji: "📈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["math", "sympy", "TensorNetwork"]
-published: false
+published: true
 ---
 
 # 目的
