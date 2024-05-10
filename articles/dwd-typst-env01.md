@@ -178,13 +178,13 @@ VS Code のプラグインに [Typst Preview](https://marketplace.visualstudio.c
 例えば、Linux 版の場合以下のような感じで最新のビルドをダウンロードすれば良い。
 
 ```sh
-curl -L https://github.com/Enter-tainer/typst-preview/releases/download/vX.XX.X/typst-preview-linux-x64 -o typst-preview
+$ curl -L https://github.com/Enter-tainer/typst-preview/releases/download/vX.XX.X/typst-preview-linux-x64 -o typst-preview
 ```
 
 パスの通ったところにバイナリを配置して、実行権限を与えた状態で、
 
 ```sh
-typst-preview --font-path /path/to/fonts_dir my_article.typ
+$ typst-preview --font-path /path/to/fonts_dir my_article.typ
 ```
 
 のようにすれば、指定のフォントディレクトリ下のフォントがロード可能な状態で、.typ ファイルをブラウザ上でプレビューできる。デフォルトでは `127.0.0.1:23627` で起動する。これは `--host` で指定できる。
