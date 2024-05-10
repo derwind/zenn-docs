@@ -29,9 +29,9 @@ published: true
 
 1. typst はインストールが面倒くさいので docker を使いたい
 1. VS Code で書きたい
-1. ホットリロードできる pdf ビューアを用意したい
+1. ~~ホットリロードできる pdf ビューアを用意したい~~（以下はまったく必要がない。[typst-preview](https://github.com/Enter-tainer/typst-preview) を使えば良い）
 
-これを踏まえ、以下のような構成にすることにした。
+~~これを踏まえ、以下のような構成にすることにした。~~（後述の [typst-previewを使う](#typst-previewを使う) 参照）
 
 ![](/images/dwd-typst-env01/001.png)
 
@@ -110,15 +110,17 @@ Adobe Acrobat Reader では pdf の更新に対するリロードがかからな
 
 ところが個人的には、このためだけに専用のビューアを追加でインストールしたくなかったので別解を模索することにした。
 
-## npm reload
+以下の内容はもう不要。（後述の [typst-previewを使う](#typst-previewを使う) 参照）
 
-ローカルサーバを立てて、Chrome をビューアにすれば良いのではないかと考えたのでこれを実現する。このためにはホットリロードに対応したサーバが必要であるが、[npm reload](https://www.npmjs.com/package/reload) が利用できる。
+## ~~npm reload~~
+
+~~ローカルサーバを立てて、Chrome をビューアにすれば良いのではないかと考えたのでこれを実現する。このためにはホットリロードに対応したサーバが必要であるが、[npm reload](https://www.npmjs.com/package/reload) が利用できる。~~
 
 ```sh
 $ npm i reload --save-dev
 ```
 
-結局これくらいはインストールする羽目になるが、npm 関連はセーフということにする。`reload` はデフォルトで `html`, `js`, `css` の更新を監視するが、今回 `pdf` も監視させたいので、package.json に記述を追加する。
+~~結局これくらいはインストールする羽目になるが、npm 関連はセーフということにする。`reload` はデフォルトで `html`, `js`, `css` の更新を監視するが、今回 `pdf` も監視させたいので、package.json に記述を追加する。~~
 
 ```json
   ...
@@ -129,30 +131,30 @@ $ npm i reload --save-dev
   ...
 ```
 
-そしてサーバを起動する。
+~~そしてサーバを起動する。~~
 
 ```sh
 $ npm start
 ```
 
-これでホットリロードに対応したサーバの準備ができた。
+~~これでホットリロードに対応したサーバの準備ができた。~~
 
-## pdf をブラウザで開く
+## ~~pdf をブラウザで開く~~
 
-実はこの状態で `http://localhost:8080/document.pdf` を開くと確かに pdf は表示されるが、pdf の再コンパイルがかかっても表示は更新されない。
+~~実はこの状態で `http://localhost:8080/document.pdf` を開くと確かに pdf は表示されるが、pdf の再コンパイルがかかっても表示は更新されない。~~
 
-`reload` はホスティングしている html に `reload.js` という JavaScript ファイルの読み込み処理を追加してから配信する動作をする。`reload.js` 内では WebSocket を用いて、ファイルの更新に応じてブラウザ側にページ再読み込みのためのイベントを送信する動作をしている。
+~~`reload` はホスティングしている html に `reload.js` という JavaScript ファイルの読み込み処理を追加してから配信する動作をする。`reload.js` 内では WebSocket を用いて、ファイルの更新に応じてブラウザ側にページ再読み込みのためのイベントを送信する動作をしている。~~
 
-このため、ブラウザで直接 pdf を開いてしまうと `reload.js` をロードして WebSocker が張られる処理が発生しない。よって、`document.pdf` を html でラップすることを考える。実はこれはとても簡単で以下で良い。
+~~このため、ブラウザで直接 pdf を開いてしまうと `reload.js` をロードして WebSocker が張られる処理が発生しない。よって、`document.pdf` を html でラップすることを考える。実はこれはとても簡単で以下で良い。~~
 
-[document.html]
+~~[document.html]~~
 ```html
 <html>
   <embed src="document.pdf" type="application/pdf" width="100%" height="100%">
 </html>
 ```
 
-これをブラウザで開くと、実際には以下の内容で読み込まれる。
+~~これをブラウザで開くと、実際には以下の内容で読み込まれる。~~
 
 ```html
 <html>
@@ -165,7 +167,29 @@ $ npm start
 <!-- End Reload -->
 ```
 
-これで漸くホットリロードに対応したビューアが手に入ったことになる。
+~~これで漸くホットリロードに対応したビューアが手に入ったことになる。~~
+
+# typst-previewを使う
+
+VS Code のプラグインに [Typst Preview](https://marketplace.visualstudio.com/items?itemName=mgt19937.typst-preview) というのがあって、非公式ではあるが、内部に typst を抱えていて [typst-preview/arch](https://enter-tainer.github.io/typst-preview/arch.html) にあるように内部的にコンパイルしてレンダラに表示してくれる。通常はこれでまったく問題ないが、スタンドアロン版のバイナリもあって、こちらはホットリロードに対応したサーバとして動作する。
+
+スタンドアロンバイナリは [typst-preview/releases](https://github.com/Enter-tainer/typst-preview/releases) から入手できる。
+
+例えば、Linux 版の場合以下のような感じで最新のビルドをダウンロードすれば良い。
+
+```sh
+curl -L https://github.com/Enter-tainer/typst-preview/releases/download/vX.XX.X/typst-preview-linux-x64 -o typst-preview
+```
+
+パスの通ったところにバイナリを配置して、実行権限を与えた状態で、
+
+```sh
+typst-preview --font-path /path/to/fonts_dir my_article.typ
+```
+
+のようにすれば、指定のフォントディレクトリ下のフォントがロード可能な状態で、.typ ファイルをブラウザ上でプレビューできる。デフォルトでは `127.0.0.1:23627` で起動する。これは `--host` で指定できる。
+
+このプレビューは .typ ファイルを編集しても先頭にスクロールせずに、その場でインクリメンタルに更新されるので非常に便利であり、これでまったく問題ない。
 
 # typst で書いてみる
 
@@ -190,7 +214,7 @@ $q$ を *一般化座標*、$dot(q)$ を *一般化速度* として、$L = L(q,
 $S = integral_0^1 L(q, dot(q)) d t$ なる作用積分を考える。$delta q(t)$ なる微小のパスを考え、$delta q(0) = delta q(1) = 0$ として、パス $q + delta q$ を考える。
 ```
 
-こんな感じのものを書いてブラウザで `http://localhost:8080/document.html` を開くと以下のように表示される。勿論ホットリロードもされる。
+こんな感じのものを書いてブラウザで ~~`http://localhost:8080/document.html`~~ `http://127.0.0.1:23627/` を開くと以下のように表示される。勿論ホットリロードもされる。
 
 ![](/images/dwd-typst-env01/002.png)
 
@@ -213,6 +237,8 @@ $ docker stop `docker ps -q --filter "name=typst-watch"`
 
 # まとめ
 
-過剰とも言える処理を実行したことになるが、絶対に `Rust` でコンパイルなんかしないぞ、`winget` なんてわけの分からないものも使わないぞという気持ちで、心理的にハードルの低い Web 系ツールだけで済ませることにした。これで docker と npm だけで環境構築をして快適な (？) typst 環境が構築できることが分かった。
+過剰とも言える処理を実行したことになるが、絶対に `Rust` でコンパイルなんかしないぞ、`winget` なんてわけの分からないものも使わないぞという気持ちで、心理的にハードルの低い Web 系ツールだけで済ませることにした。これで docker ~~と npm だけ~~で環境構築をして快適な (？) typst 環境が構築できることが分かった。
 
-ビューアについては普通は [Sumatra PDF](https://www.sumatrapdfreader.org/free-pdf-reader) を使うのが大正解としか言えない。この場合、npm reload も不要となる。docker だけで済んでミニマル感があって更に良い。ただ今回は「**何か嫌だった**」という理由で npm reload を使っただけである。
+ビューアについては普通は [Sumatra PDF](https://www.sumatrapdfreader.org/free-pdf-reader) を使うのが大正解としか言えない。~~この場合、npm reload も不要となる。docker だけで済んでミニマル感があって更に良い。ただ今回は「**何か嫌だった**」という理由で npm reload を使っただけである。~~
+
+ビューアの他の代替案としては、VS Code のプラグインの [Typst Preview](https://marketplace.visualstudio.com/items?itemName=mgt19937.typst-preview) を使ってプレビューをサイドペインに開くことであり、それが好みでない場合には、Typst Preview のスタンドアロン版を使ってプレビュー用のホットリロード対応のサーバを起動することである。
