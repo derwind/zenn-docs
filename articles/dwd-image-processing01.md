@@ -3,7 +3,7 @@ title: "画像処理について考える (1) — 高速Fourier変換"
 emoji: "🎨"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "画像処理", "フーリエ変換"]
-published: false
+published: true
 ---
 
 # 目的
