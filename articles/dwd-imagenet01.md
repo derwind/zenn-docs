@@ -160,7 +160,7 @@ bert_model = BertModel.from_pretrained("google-bert/bert-base-uncased")
 bert_model.eval()
 ```
 
-適当に予備実験をしたところ、`"man and woman"` みたいな文章はトークナイザを通すと `['[CLS]', 'main', 'and', 'woman', '[SEP]']` のようになっていた。`[CLS]` と `[SEP]` は不要なのだがという気持ちもあったが、文章ベクトルを作るにあたって [【🔰自然言語処理】単語の分散表現② Word2VecとBERT](https://tt-tsukumochi.com/archives/4770) を参考したところ、そんな細かい処理をしなくて良さそうだったので記事に倣った。多分アテンションマスクを掛けこむことで、十分に寄与が薄まるのだろう・・・。
+適当に予備実験をしたところ、`"man and woman"` みたいな文章はトークナイザを通すと `['[CLS]', 'man', 'and', 'woman', '[SEP]']` のようになっていた。`[CLS]` と `[SEP]` は不要なのだがという気持ちもあったが、文章ベクトルを作るにあたって [【🔰自然言語処理】単語の分散表現② Word2VecとBERT](https://tt-tsukumochi.com/archives/4770) を参考したところ、そんな細かい処理をしなくて良さそうだったので記事に倣った。多分アテンションマスクを掛けこむことで、十分に寄与が薄まるのだろう・・・。
 
 ```python
 sentence_vecs = []
