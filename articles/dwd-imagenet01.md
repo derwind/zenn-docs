@@ -3,7 +3,7 @@ title: "ImageNet について考える (1) — Tiny ImageNet"
 emoji: "🎨"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習", "ImageNet", "NLP"]
-published: false
+published: true
 ---
 
 # 目的
