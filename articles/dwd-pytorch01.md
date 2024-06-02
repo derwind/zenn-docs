@@ -3,7 +3,7 @@ title: "PyTorch について考える (1) — nn.CrossEntropyLoss と nn.NLLLoss
 emoji: "🔥"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "PyTorch"]
-published: false
+published: true
 ---
 
 # 目的
