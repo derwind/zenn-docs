@@ -3,7 +3,7 @@ title: "ImageNet について考える (3) — Tiny ImageNet の分類の説明�
 emoji: "🎨"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習", "ImageNet", "PyTorch", "TensorNetwork"]
-published: false
+published: true
 ---
 
 # 目的
