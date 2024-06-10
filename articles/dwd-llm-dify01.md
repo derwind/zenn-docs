@@ -3,7 +3,7 @@ title: "Dify + Llama 3 で遊んでみる (1)"
 emoji: "🤖"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["LLM", "localllm", "Dify"]
-published: false
+published: true
 ---
 
 # 目的
