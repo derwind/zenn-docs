@@ -3,7 +3,7 @@ title: "Stable Diffusion で遊んでみる (3) — わざわざ Diffusers で V
 emoji: "🎨"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習", "stablediffusion", "poem"]
-published: false
+published: true
 ---
 
 # 目的
