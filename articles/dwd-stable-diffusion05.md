@@ -3,7 +3,7 @@ title: "Stable Diffusion で遊んでみる (5) — ネガティブプロンプ�
 emoji: "🎨"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習", "stablediffusion"]
-published: false
+published: true
 ---
 
 # 目的
