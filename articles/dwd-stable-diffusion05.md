@@ -434,6 +434,10 @@ $$
 
 $$
 \begin{align*}
+\begin{pmatrix}
+\text{noise\_pred}_- \\
+\text{noise\_pred}_+
+\end{pmatrix} =
 \epsilon_\theta \left(\mathbf{x}_t, \begin{pmatrix}c (p_-) \\ c (p_+)\end{pmatrix}, t \right)
 \end{align*}
 $$
@@ -456,7 +460,7 @@ $$
                     noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
 ```
 
-snippet の最後の線形結合は以下に対応する。なお `self.guidance_scale` が $w$ のことである。 
+snippet の最後の線形結合は以下に対応する。推定されたノイズの取り出しがこのようになる理由については、上記の数式参照。なお `self.guidance_scale` が $w$ のことである。 
 
 $$
 \begin{align*}
