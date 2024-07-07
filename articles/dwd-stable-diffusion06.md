@@ -3,7 +3,7 @@ title: "Stable Diffusion で遊んでみる (6) — ネガティブプロンプ�
 emoji: "🎨"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Python", "機械学習", "stablediffusion"]
-published: false
+published: true
 ---
 
 # 目的
@@ -12,7 +12,7 @@ published: false
 
 3. ネガティブプロンプトの早期適用は逆に望まない生成 (“Reverse Activation”) の可能性
 
-というのがあって、ネガティブプロンプトを最初から適用するのは良くなさそうという話があった。[Stable Diffusion で遊んでみる (5) — ネガティブプロンプトを試す（実装編）](/derwind/articles/dwd-stable-diffusion05) では保留にしたが、最小限の手間で何とかなるかも？と思ったので試してみた。
+というのがあって、ネガティブプロンプトを最初から適用するのは良くなさそうという話があった。[Stable Diffusion で遊んでみる (5) — ネガティブプロンプトを試す（実装編）](/derwind/articles/dwd-stable-diffusion05) では検証を保留にしたが、最小限の手間で何とかなるかも？と思ったので試してみた。
 
 # 特異メソッド
 
