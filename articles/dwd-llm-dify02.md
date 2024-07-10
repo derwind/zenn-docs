@@ -3,7 +3,7 @@ title: "Dify + Llama 3 で遊んでみる (2) — Llama-3-ELYZA-JP-8B も使っ�
 emoji: "🤖"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: []
-published: false
+published: true
 ---
 
 # 目的
