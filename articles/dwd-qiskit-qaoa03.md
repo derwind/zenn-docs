@@ -19,7 +19,7 @@ blueqat さんのブログ記事 [HOBOソルバーでグラフカラーリング
 
 ![](/images/dwd-qiskit-qaoa03/001.png =500x)
 
-## QAOA で解く
+# QAOA で解く
 
 QAOA でも `Rzzz` ゲートなどを作ることで HOBO を直接扱えるが、今回は敢えて QUBO を扱ってみたい。この場合、扱いが少しややこしくなるため、まずは小さな問題を解きたい。**頂点を 4 つに減らし**、4 色での塗分けを考える。頂点の接続は以下とする。
 
@@ -76,7 +76,7 @@ from qiskit_aer.primitives import EstimatorV2
 from qiskit_aer.quantum_info import AerStatevector
 ```
 
-### QUBO での定式化
+## QUBO での定式化
 
 参考資料として [tytan_tutorial](https://github.com/tytansdk/tytan_tutorial) の「初代基礎コース」の「tutorial04. グラフ分割問題、グラフカラーリング問題」を参考にする。
 
@@ -139,11 +139,11 @@ for u, v in E:
         HB += q[u][i] * q[v][i]
 ```
 
-### QUBO からイジングハミルトニアンへの変換
+## QUBO からイジングハミルトニアンへの変換
 
 [cuQuantum で遊んでみる (6) — 最大カット問題と QUBO と QAOA](/derwind/articles/dwd-cuquantum06) でも触れたが、この QUBO 式を $z_i = 1 - 2q_i$ という変数変換により、$z_i$ を用いたイジングハミルトニアンに置き換える必要がある。
 
-[Qiskit で遊んでみる (21) — QAOA でお絵描き](/derwind/articles/dwd-qiskit21) で使った関数を流用して以下のようなユーティリティを作る。
+[Qiskit で遊んでみる (21) — QAOA でお絵描き](/derwind/articles/dwd-qiskit21) で使った関数を流用して以下のようなユーティリティを作った。以下を使う必要は特にはなく、とにかく QUBO をイジング式に変換できれば何でも良い。
 
 **注意点（変更箇所）**:
 
@@ -206,7 +206,7 @@ def get_ising(
     return ising_dict, offset
 ```
 
-これを用いて QUBO をイジング形式に変換する。直後に書く理由で、今回は（`HA` は定義したもののこれは用いずに）`HB` だけ変換する。4 頂点 4 色なので、$4 \times 4 = 16$ 個の量子ビットへの対応となる。`(0, 4): 0.25` などは、$0.25 z_0 z_4$ に対応する。以下、$-0.5 z_0 + 0.25 z_0 z_4 + 0.25 z_0 z_8 + \cdots$ のようなイジング形式が得られている。
+これを用いて QUBO をイジング形式に変換する。後述する理由で、今回は（`HA` は定義したもののこれは用いずに）`HB` だけ変換する。4 頂点 4 色なので、$4 \times 4 = 16$ 個の量子ビットへの対応となる。`(0, 4): 0.25` などは、$0.25 z_0 z_4$ に対応する。以下、$-0.5 z_0 + 0.25 z_0 z_4 + 0.25 z_0 z_8 + \cdots$ のようなイジング形式が得られている。
 
 ```python
 qubo, offset = Compile(HB).get_qubo()
@@ -251,13 +251,31 @@ pprint.pprint(ising)
 >  (14,): -0.5,
 >  (15,): -0.5}
 
+イジング形式を QAOA の問題ハミルトニアンに変換するのは以下のような実装で可能である。Qiskit を使うので、`SparsePauliOp` の書式に落とし込めば良い。
 
-さて、次に `HA` であるが、これはワンホット制約を満たすための項であった。QAOA の場合 $XY$ ミキサーというものを使うことでこの制約を満たすことができる。この辺は長くなるので、Appendix にて後述した。
+```python
+def convert_to_z(indices: tuple[int, ...], num_qubits: int) -> str:
+    paulis = ["I"] * num_qubits
+    for i in indices:
+        paulis[i] = "Z"
+    return "".join(paulis[::-1])
+
+
+def define_observables(
+    ising: dict[tuple[int, ...], float], num_qubits: int
+) -> SparsePauliOp:
+    ham_coeffs = [(convert_to_z(k, num_qubits), v) for k, v in ising.items()]
+    return SparsePauliOp.from_list(ham_coeffs)
+```
+
+## ワンホット制約
+
+さて、次に `HA` であるが、これはワンホット制約を満たすための項であった。QAOA の場合 $XY$ ミキサーというものを使うことで（特に complete-$XY$ ミキサーとそこ固有状態である Hamming 重み 1 の Dicke 状態を使うことで）この制約を満たすことができる。この辺は長くなるので、Appendix にて後述した。
 
 
 ### Dicke 状態の作成
 
-詳細は論文に委ねるとして実装は以下のようになる:
+詳細は文献 [6] に委ねるとして実装は以下のようになる:
 
 ```python
 def CCRYGate(theta: float) -> Gate:
@@ -326,6 +344,312 @@ $$
 \frac{1}{2} (\ket{0001} + \ket{0010} + \ket{0100} + \ket{1000})
 \end{align*}
 $$
+
+## Ansatz を作成する回路
+
+イジングハミルトニアンを問題ハミルトニアンとし、ミキシングハミルトニアンに complete-$XY$ ミキサーを使う ansatz を作成する。
+
+```python
+def apply_rotated_multiple_z(qc, indices, theta, gamma):
+    prev_idx = indices[0]
+    for idx in indices[1:]:
+        qc.cx(prev_idx, idx)
+        prev_idx = idx
+    qc.rz(theta * gamma, indices[-1])
+    prev_idx = indices[-1]
+    for idx in reversed(indices[:-1]):
+        qc.cx(idx, prev_idx)
+        prev_idx = idx
+
+
+def define_qaoa_ansatz(
+    ising: dict[tuple[int, ...], float], num_qubits: int, n_reps: int
+) -> QuantumCircuit:
+    gammas = ParameterVector("γ", n_reps)
+    betas = ParameterVector("β", n_reps)
+    ansatz = QuantumCircuit(num_qubits)
+    for i in range(n_reps):
+        gamma = gammas[i]
+        beta = betas[i]
+        # time evolution of the problem Hamiltonian: ZZ-hamiltonian
+        for key, value in ising.items():
+            apply_rotated_multiple_z(ansatz, key, value, gamma)
+        ansatz.barrier()
+        # time evolution of the mixing Hamiltonian: complete-XY mixer
+        for vertex in range(n_vertices):
+            offset = n_colors * vertex
+            for j in range(offset, offset + n_colors - 1):
+                for k in range(j + 1, offset + n_colors):
+                    ansatz.rxx(beta, j, k)
+                    ansatz.ryy(beta, j, k)
+        ansatz.barrier()
+    return ansatz
+```
+
+## 期待値計算
+
+イジングハミルトニアンの ansatz による期待値を求める関数を定義する。[EstimatorV2](https://docs.quantum.ibm.com/api/qiskit-ibm-runtime/qiskit_ibm_runtime.EstimatorV2) という新しい目のモジュールを用いるのでやや癖のある書き方だが、流儀に合わせておく。
+
+```python
+def compute_expectation(params, *args):
+    (estimator, ansatz, observables, notify_loss) = args
+    pubs = [(ansatz, observables, params)]
+    job = estimator.run(pubs)  # V2
+    energy = job.result()[0].data.evs
+    energy = energy.item()  # np.ndarray -> float
+
+    if notify_loss is not None:
+        notify_loss(energy)
+
+    return energy
+```
+
+これで全てユーティリティは揃ったので最適化ルーチンを回すことになる。
+
+## 最適化
+
+### Ansatz の作成
+
+まず、初期状態の準備として、16 量子ビットのうち 4 量子ビットずつで Hamming 重み 1 の 4 量子ビットの Dicke 状態 $\ket{D_1^4}$ を作成する。
+
+```python
+num_qubits = n_vertices * n_colors  # 4x4 = 16
+n_reps = 20
+
+ansatz = QuantumCircuit(num_qubits)
+
+dicke = make_dicke_circuit(4, 1)
+for i in range(0, num_qubits, 4):
+    ansatz = ansatz.compose(dicke, range(i, i + 4))
+
+ansatz.barrier()
+
+qaoa_ansatz = define_qaoa_ansatz(ising, num_qubits, n_reps)
+
+ansatz = ansatz.compose(qaoa_ansatz)
+ansatz.draw("mpl", style="clifford", scale=0.3, fold=60)
+```
+
+![](/images/dwd-qiskit-qaoa03/004.png)
+
+`n_reps = 20` としたので 2 回目の繰り返しの途中までしか画像キャプチャできていないが、このような絵になる。左上に Dicke 状態 $\ket{D_1^4}$ が 4 量子ビットずつで 4 個見える。続いてイジングハミルトニアンの時間発展が $RZZ$ や $RZ$ ゲートを用いて階段状に連なっている。左下にうつって、complete-$XY$ ミキサーの時間発展が密集して、2 周目のブロックにうつっている。
+
+### イジングハミルトニアンの作成
+
+次にイジング形式からイジングハミルトニアンを作る。
+
+```python
+observables = define_observables(ising, num_qubits)
+pprint.pprint(observables)
+```
+
+> SparsePauliOp(['IIIIIIIIIIIIIIIZ', 'IIIIIIIIIIIIIIZI', 'IIIIIIIIIIIIIZII', 'IIIIIIIIIIIIZIII', 'IIIIIIIIIIIZIIII', 'IIIIIIIIIIIZIIIZ', 'IIIIIIIIIIZIIIII', 'IIIIIIIIIZIIIIII', 'IIIIIIIIZIIIIIII', 'IIIIIIIZIIIIIIII', 'IIIIIIIZIIIIIIIZ', 'IIIIIIZIIIIIIIII', 'IIIIIZIIIIIIIIII', 'IIIIZIIIIIIIIIII', 'IIIZIIIIIIIIIIII', 'IIZIIIIIIIIIIIII', 'IZIIIIIIIIIIIIII', 'ZIIIIIIIIIIIIIII', 'IIIIIIIIIIZIIIZI', 'IIIIIIZIIIIIIIZI', 'IIIIIIIIIZIIIZII', 'IIIIIZIIIIIIIZII', 'IIIIIIIIZIIIZIII', 'IIIIZIIIIIIIZIII', 'IIIIIIIZIIIZIIII', 'IIIZIIIIIIIZIIII', 'IIIIIIZIIIZIIIII', 'IIZIIIIIIIZIIIII', 'IIIIIZIIIZIIIIII', 'IZIIIIIIIZIIIIII', 'IIIIZIIIZIIIIIII', 'ZIIIIIIIZIIIIIII', 'IIIZIIIZIIIIIIII', 'IIZIIIZIIIIIIIII', 'IZIIIZIIIIIIIIII', 'ZIIIZIIIIIIIIIII'],
+>               coeffs=[-0.5 +0.j, -0.5 +0.j, -0.5 +0.j, -0.5 +0.j, -0.75+0.j,  0.25+0.j,
+>  -0.75+0.j, -0.75+0.j, -0.75+0.j, -0.75+0.j,  0.25+0.j, -0.75+0.j,
+>  -0.75+0.j, -0.75+0.j, -0.5 +0.j, -0.5 +0.j, -0.5 +0.j, -0.5 +0.j,
+>   0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,
+>   0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,
+>   0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j,  0.25+0.j])
+
+### トランスパイル
+
+今回、Dicke 状態の作成で `RYGate(theta).control(2)` という実装を用いたが、これを分解しないと `AerSimulator` 上でも実行できないので、`AerSimulator` 向けにトランスパイルする[^1][^2]。
+
+[^1]: 以下のような方法を使えば不要かもしれない。<br>- [CCCRY gate creation](https://quantumcomputing.stackexchange.com/questions/27546/cccry-gate-creation) <br>- [How can we construct a control-control y-rotation (CCRy) gate in Qiskit?](https://quantumcomputing.stackexchange.com/questions/16208/how-can-we-construct-a-control-control-y-rotation-ccry-gate-in-qiskit) <br>- [A problem with application of multi controlled rotation gates](https://quantumcomputing.stackexchange.com/questions/15475/a-problem-with-application-of-multi-controlled-rotation-gates/15478#15478)
+
+[^2]: [Qiskit で遊んでみる (24) — Qiskit Runtime local testing mode を使ってみる](/derwind/articles/dwd-qiskit24) でも軽く触れたが、最近は 127 量子ビット超の超伝導量子コンピュータの実機上で何とか回路を実行するために細かいトランスパイルの制御をさせたいらしく、`PassManager` を使ったトランスパイル方法が推しのようである。[ISA回路とは](https://www.ibm.com/blogs/systems/jp-ja/isa-circuits/) に説明があるが、細かくは触れずに、ISA (Instruction Set Architecture) 回路へとトランスパイルして、イジングハミルトニアンもそのレイアウトへと合わせ込む[^3]。
+
+[^3]: `PassManager` を深く理解してカスタマイズすると、オレオレゲートを定義して、それをトランスパイルするという芸当も実装可能である・・・。
+
+以下は “こういうもの” として深く気にせずに実行する。
+
+```python
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+
+
+backend = AerSimulator()
+
+pm = generate_preset_pass_manager(backend=backend, optimization_level=3)
+isa_ansatz = pm.run(ansatz)
+layout = isa_ansatz.layout
+isa_observables = observables.apply_layout(layout)
+```
+
+### 最適化メインルーチン
+
+念のために GPU (`cuStateVec`) を使う形でシミュレーションを実行する。
+
+```python
+%%time
+
+rng = np.random.default_rng(42)
+init = rng.random(ansatz.num_parameters) * np.pi
+
+options = {
+    "backend_options": {
+        "device": "GPU",
+        "cuStateVec_enable": True,
+    }
+}
+
+estimator = EstimatorV2(options=options)
+
+losses = []
+
+def notify_loss(energy):
+    global losses
+    losses.append(energy)
+
+maxiter = 10000
+
+result = minimize(
+    compute_expectation,
+    init,
+    args=(estimator, isa_ansatz, isa_observables, notify_loss),
+    method="Powell",
+    options={
+        "maxiter": maxiter
+    },
+)
+```
+
+> CPU times: user 32min 29s, sys: 28.9 s, total: 32min 58s
+> Wall time: 33min 12s
+
+NVIDIA T4 で実験したが、30 分ちょっとで最適化が完了した。今回はナイーブに実行したが、文献 [3] を参考にパラメータスケジュールを実装すれば収束を早めることができるかもしれない。
+
+## 結果の確認
+
+まず、エネルギーの最小値を見てみる。
+
+```python
+print(result.message)
+print(f"opt value={round(result.fun.item(), 3)}")
+```
+
+> Optimization terminated successfully.
+> opt value=-4.582
+
+エネルギーの推移を可視化する。
+
+```python
+plt.figure()
+x = np.arange(0, len(losses), 1)
+plt.plot(x, losses, color="blue")
+plt.show()
+```
+
+![](/images/dwd-qiskit-qaoa03/005.png =500x)
+
+もう少し下がりそうではあるが、今回はこれくらいで問題は解けた。
+
+### サンプリングを行う
+
+```python
+%%time
+
+opt_ansatz = isa_ansatz.assign_parameters(result.x)
+opt_ansatz.measure_all()
+
+sim = AerSimulator(device="GPU", method="statevector", cuStateVec_enable=True)
+counts = sim.run(opt_ansatz, shots=1024*50).result().get_counts()
+
+ok_count = 0
+ng_count = 0
+
+
+def bin2int(arr):
+    for i, v in enumerate(arr[::-1]):
+        if int(v) == 1:
+            return i
+    return -1
+
+
+for state, count in list(sorted(counts.items(), key=lambda k_v: -k_v[1]))[:20]:
+    state_ = list(state)
+    state_ = np.array([state_[i:i + n_colors] for i in range(0, num_qubits, n_colors)], dtype=int)
+    colors = [bin2int(stat) for stat in state_]
+    D, C, B, A = colors
+    ok = (A != B) and (A != C) and (B != C) and (B != D) and (C != D)
+    print(state, f"{A=} {B=} {C=} {D=}", ok, f"({counts[state]} times)")
+
+for state, count in list(sorted(counts.items(), key=lambda k_v: -k_v[1])):
+    state_ = list(state)
+    state_ = np.array([state_[i:i + n_colors] for i in range(0, num_qubits, n_colors)], dtype=int)
+    if np.all(np.sum(state_, axis=1) == 1):
+        colors = [bin2int(stat) for stat in state_]
+        D, C, B, A = colors
+        ok = (A != B) and (A != C) and (B != C) and (B != D) and (C != D)
+        if ok:
+            ok_count += 1
+        else:
+            ng_count += 1
+    else:
+        ng_count += 1
+print(f"OK: {ok_count}, NG: {ng_count}")
+```
+
+> 0001100001000001 A=0 B=2 C=3 D=0 True (1846 times)
+> 0001010010000001 A=0 B=3 C=2 D=0 True (1816 times)
+> 1000000101001000 A=3 B=2 C=0 D=3 True (1718 times)
+> 1000010000011000 A=3 B=0 C=2 D=3 True (1645 times)
+> 0010010010000010 A=1 B=3 C=2 D=1 True (1581 times)
+> 0010100001000010 A=1 B=2 C=3 D=1 True (1560 times)
+> 0010010000010010 A=1 B=0 C=2 D=1 True (1389 times)
+> 0010000101000010 A=1 B=2 C=0 D=1 True (1383 times)
+> 0100000100100100 A=2 B=1 C=0 D=2 True (1233 times)
+> 0100001000010100 A=2 B=0 C=1 D=2 True (1178 times)
+> 1000000100011000 A=3 B=0 C=0 D=3 False (890 times)
+> 0100001010000100 A=2 B=3 C=1 D=2 True (842 times)
+> 0100100000100100 A=2 B=1 C=3 D=2 True (809 times)
+> 0001010010000010 A=1 B=3 C=2 D=0 True (784 times)
+> 0010010010000001 A=0 B=3 C=2 D=1 True (782 times)
+> 0001001001000001 A=0 B=2 C=1 D=0 True (762 times)
+> 0001100001000010 A=1 B=2 C=3 D=0 True (752 times)
+> 1000000101000010 A=1 B=2 C=0 D=3 True (748 times)
+> 0010100001000001 A=0 B=2 C=3 D=1 True (747 times)
+> 0001010000100001 A=0 B=1 C=2 D=0 True (736 times)
+> OK: 48, NG: 200
+
+ざっと確認すると、可能性のある $2^{16} = 65,536$ 通りの候補のうち、実際にサンプリングされたのは 248 通りで、解けているケースは 48 通りということだった。上位 20 件を見ると、ほぼ解けているケースが並んでいる。十分な結果であろう。
+
+# 5 頂点のグラフの 4 色カラーリング問題
+
+冒頭で触れた本命のケースであるが、こちらは内容的にはほぼ同様の実装であるので詳細は割愛する。但し、NVIDIA A100 などのハイスペックの GPU で数時間くらい回さないと良い結果にならなさそうな感じであった。
+
+エネルギーの推移は以下のような感じであった。
+
+![](/images/dwd-qiskit-qaoa03/006.png =500x)
+
+サンプリング結果は以下である。
+
+> 00100001010010000010 A=1 B=3 C=2 D=0 E=1 True (858 times)
+> 00010010001010000100 A=2 B=3 C=1 D=1 E=0 True (831 times)
+> 10000010001001001000 A=3 B=2 C=1 D=1 E=3 True (739 times)
+> 00101000100001000010 A=1 B=2 C=3 D=3 E=1 True (736 times)
+> 00011000001001000001 A=0 B=2 C=1 D=3 E=0 True (595 times)
+> 10000001000101000010 A=1 B=2 C=0 D=0 E=3 True (557 times)
+> 01000001100000100100 A=2 B=1 C=3 D=0 E=2 True (474 times)
+> 01001000100000010010 A=1 B=0 C=3 D=3 E=2 True (423 times)
+> 00010100010000101000 A=3 B=1 C=2 D=2 E=0 True (399 times)
+> 10000100001000011000 A=3 B=0 C=1 D=2 E=3 True (392 times)
+> 00010100001010000010 A=1 B=3 C=1 D=2 E=0 True (362 times)
+> 01000001000100100100 A=2 B=1 C=0 D=0 E=2 True (353 times)
+> 01000001001010000010 A=1 B=3 C=1 D=0 E=2 True (335 times)
+> 00010100010000100001 A=0 B=1 C=2 D=2 E=0 True (318 times)
+> 01001000100000100100 A=2 B=1 C=3 D=3 E=2 True (289 times)
+> 10000010010000100001 A=0 B=1 C=2 D=1 E=3 False (284 times)
+> 10000100100000011000 A=3 B=0 C=3 D=2 E=3 False (283 times)
+> 00011000000100100001 A=0 B=1 C=0 D=3 E=0 False (283 times)
+> 00101000000100100100 A=2 B=1 C=0 D=3 E=1 False (281 times)
+> 01000010100000010100 A=2 B=0 C=3 D=1 E=2 True (276 times)
+> OK: 96, NG: 881
+
+可能性のある $2^{20} = 1,048,576$ 通りの候補のうち、実際にサンプリングされたのは 977 通りで、解けているケースは 96 通りということだった。上位 20 件を見ると、ほぼ解けているケースが並んでいる。こちらも十分な結果であろう。
+
+# まとめ
+
+QAOA を用いてグラフカラーリング問題を解いてみた。解けるには解けるが結構大変だし、それなりに時間もかかることが分かった。
 
 # Appendix
 
