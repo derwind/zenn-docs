@@ -1,160 +1,23 @@
 ---
-title: "QAOA を眺めてみる (3) ― HOBO と QAOA とグラフカラーリング問題"
+title: "QAOA を眺めてみる (3) ― グラフカラーリング問題と QAOA"
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["Qiskit", "Python", "QUBO", "HOBO"]
+topics: ["Qiskit", "Python", "QUBO"]
 published: false
 ---
 
 # 目的
 
-blueqat さんのブログ記事 [HOBOソルバーでグラフカラーリング問題を効率化](https://blueqat.com/yuichiro_minato2/ae758ca8-27fe-43e8-8bdc-2171dfc3c01e) を HOBO ソルバと QAOA で解いてみようというもの。
 
-欲張って、理論とソルバの話も盛り込んだので、前置きがとても長い・・・。
-
-# HOBO ソルバ
-
-**理論**
-
-- [arXiv:2407.16106 Tensor Network Based HOBO Solver](https://arxiv.org/abs/2407.16106)
-
-**ソルバ**
-
-- [arXiv:2407.19987 HOBOTAN: Efficient Higher Order Binary Optimization Solver with Tensor Networks and PyTorch](https://arxiv.org/abs/2407.19987)
-
-# そもそも QUBO と HOBO とは？
-
-QUBO (Quadratic Unconstrained Binary Optimization) という組み合わせ最適化の定式化に用いられる概念があって、以前に [cuQuantum で遊んでみる (6) — 最大カット問題と QUBO と QAOA](/derwind/articles/dwd-cuquantum06) でも扱った。
-
-QUBO というのは、$n$ 個のバイナリ変数 $\bm{x}^T = (x_1, x_2, \ldots, x_n)^T \in \{0, 1\}^n$ があるとして、適当な $n$ 次実対称行列 $Q \in \operatorname{Mat}(n; \R)$ を用いて **定数項を除いて**
-
-$$
-\begin{align*}
-H (\bm{x}) = \bm{x}^T Q \bm{x}
-\tag{1}
-\end{align*}
-$$
-
-という形で記述できる。各 $x_i$ について適当に 0 か 1 を代入して $H (\bm{x})$ を最小化したいのだが、組み合わせ数が $2^n$ 通りになるので一般的には解くのが難しい。
-
-QUBO は 2 次式であるが、これに対して、HOBO (Higher Order Binary Optimization) というものがあって、3 次以上の項が出て来るものを指す。HOBO は HUBO と書いてある文献もあるので略語には注意されたい。
-
-従来、HOBO を解く場合には [HOBOからQUBOへの変換](https://qiita.com/nori_autumn/items/2713bb3dc48663cb680b) のようなバイナリ変数の $x^2 = x$ という性質を活用する形で、「補助量子ビット」というものを導入して 2 次式に落とすというテクニックが使われていた。
-
-ところで、式 (1) は以下のようにも書ける。
-
-$$
-\begin{align*}
-H (\bm{x}) = \sum_{i,j=1}^2 Q_{ij} x_i x_j
-\tag{1'}
-\end{align*}
-$$
-
-この考えを拡張すると、では 3 次式だったら適当な $T_{ijk} \in \R$ を用いて
-
-$$
-\begin{align*}
-H (\bm{x}) = \sum_{i,j,k=1}^3 T_{ijk} x_i x_j x_k
-\tag{2}
-\end{align*}
-$$
-
-と書けるのでは？という考えに至る。まさに [arXiv:2407.16106 Tensor Network Based HOBO Solver](https://arxiv.org/abs/2407.16106) はこのことを主張していて、上記は PyTorch では
-
-```python
-H = torch.einsum("ijk,i,j,k->", T, x, x, x)
-```
-
-で実装できることが p.6 で述べられている。このような 3 次或はより高次の $T_{ijk}$ は「テンソル」[^1]と呼ばれるもので、式 (2) はテンソル計算[^2]ということになる。
-
-[^1]: テンソルはスカラー、ベクトル、行列を拡張する概念で、これらを自然に内包する。順に 0 階のテンソル、1 階のテンソル、2 階のテンソルと呼ぶこともできる。
-
-[^2]: テンソル計算、特にここで使っている `torch.einsum` は、[A. Einstein の縮約記法](https://ja.wikipedia.org/wiki/%E3%82%A2%E3%82%A4%E3%83%B3%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%A4%E3%83%B3%E3%81%AE%E7%B8%AE%E7%B4%84%E8%A8%98%E6%B3%95)に由来する。$\nu=0$ の時間、$\nu=1,2,3$ の空間という時空の 4 変数について「共変テンソル」と「反変テンソル」の要素をかけ合わせて和をとる操作が相対性理論ではしばしば登場するが、大変煩雑なのでこのような記法が導入された。計算機の理論ではこの制約が大幅に緩和されたようで、普通の多次元配列同士の要素のかけ合わせが許される。気になる場合は、間に計量テンソルが挟まっていて、添え字の上げ下げが行われていると思っても良いかもしれない。
-
-HOBO → QUBO へのリダクションを行わずにテンソル計算で実際に HOBO を解く試みが [arXiv:2407.19987 HOBOTAN: Efficient Higher Order Binary Optimization Solver with Tensor Networks and PyTorch](https://arxiv.org/abs/2407.19987) であり、ソルバの試験実装は現在 https://github.com/ShoyaYasuda/hobotan にある。論文には難しそうなことも書いてあるが、本質的なのは「テンソル $T_{ijk}$ をどうやって構築するか？」という部分である。PyPI にパッケージは上がっていないので、以下のようにしてインストールする必要がある。
-
-```sh
-pip install -U git+https://github.com/ShoyaYasuda/hobotan
-```
-
-前置きはこれくらいにして「グラフカラーリング問題」を試しに解いてみたい。
+blueqat さんのブログ記事 [HOBOソルバーでグラフカラーリング問題を効率化](https://blueqat.com/yuichiro_minato2/ae758ca8-27fe-43e8-8bdc-2171dfc3c01e) を敢えて QAOA で解いてみようというもの。
 
 # グラフカラーリング問題
 
 グラフカラーリング問題というのはグラフ（頂点、辺）において、辺で繋がった両端の頂点同士が異なる色になるように、指定の範囲の色で塗り分けるという問題である。
 
-まず [HOBOソルバーでグラフカラーリング問題を効率化](https://blueqat.com/yuichiro_minato2/ae758ca8-27fe-43e8-8bdc-2171dfc3c01e) の HOBO ソルバでの解法を眺めたい。ここでは 5 頂点を 4 色で塗り分ける問題を扱っている。頂点の辺での接続は以下の通りである:
+まず [HOBOソルバーでグラフカラーリング問題を効率化](https://blueqat.com/yuichiro_minato2/ae758ca8-27fe-43e8-8bdc-2171dfc3c01e) では以下のような 5 頂点のグラフの 4 色カラーリング問題を HOBO ソルバで解いている。頂点の辺での接続は以下の通りである:
 
 ![](/images/dwd-qiskit-qaoa03/001.png =500x)
-
-## HOBO で解く
-
-必要なモジュールを import する:
-
-```python
-from __future__ import annotations
-
-from hobotan import (
-    symbols, symbols_list, symbols_nbit, sampler, Auto_array, Compile
-)
-```
-
-今回は整数エンコーディングという手法を用いてある。つまり、量子ビット $q_0$ と $q_1$ を用いて 4 色 (0, 1, 2, 3) を表現している。例えば、色 2 は 2 進数で表現すると `10` であるので $q_1 = 1$, $q_0 = 0$ と符号化できるいった形である。
-
-以下ではオリジナルのコードに加え、色の出力と OK かどうかの判定を加えた。
-
-```python
-%%time
-
-q = symbols_list(10, 'q{}')
-
-# A(0, 1), B(2, 3), C(4, 5), D(6, 7), E(8, 9)
-H =  ((q[0] - q[2])**2 -1)**2 * ((q[1] - q[3])**2 -1)**2 #AB
-H +=  ((q[0] - q[6])**2 -1)**2 * ((q[1] - q[7])**2 -1)**2 #AD
-H +=  ((q[2] - q[6])**2 -1)**2 * ((q[3] - q[7])**2 -1)**2 #BD
-H +=  ((q[2] - q[4])**2 -1)**2 * ((q[3] - q[5])**2 -1)**2 #BC
-H +=  ((q[2] - q[8])**2 -1)**2 * ((q[3] - q[9])**2 -1)**2 #BE
-H +=  ((q[4] - q[8])**2 -1)**2 * ((q[5] - q[9])**2 -1)**2 #CE
-H +=  ((q[6] - q[8])**2 -1)**2 * ((q[7] - q[9])**2 -1)**2 #DE
-
-hobo, offset = Compile(H).get_hobo()
-print(f'offset\n{offset}')
-
-solver = sampler.SASampler(seed=0)
-result = solver.run(hobo, shots=100)
-
-for r in result[:5]:
-    print(r)
-    arr, subs = Auto_array(r[0]).get_ndarray('q{}')
-    q0, q1, q2, q3, q4, q5, q6, q7, q8, q9 = arr
-    A = 2 * q1 + q0
-    B = 2 * q3 + q2
-    C = 2 * q5 + q4
-    D = 2 * q7 + q6
-    E = 2 * q9 + q8
-    ok = (A != B) and (A != D) and (B != D) and (B != C) and \
-         (B != E) and (C != E) and (D != E)
-    print(arr, f"{A=} {B=} {C=} {D=} {E=} {ok=}")
-```
-
-これは以下のような出力になる。
-
-> offset
-> 7.0
-> [{'q0': 0, 'q1': 0, 'q2': 0, 'q3': 1, 'q4': 0, 'q5': 0, 'q6': 1, 'q7': 0, 'q8': 1, 'q9': 1}, -7.0, 3]
-> [0 0 0 1 0 0 1 0 1 1] A=0 B=2 C=0 D=1 E=3 ok=True
-> [{'q0': 1, 'q1': 0, 'q2': 0, 'q3': 0, 'q4': 1, 'q5': 0, 'q6': 0, 'q7': 1, 'q8': 1, 'q9': 1}, -7.0, 4]
-> [1 0 0 0 1 0 0 1 1 1] A=1 B=0 C=1 D=2 E=3 ok=True
-> [{'q0': 1, 'q1': 0, 'q2': 0, 'q3': 0, 'q4': 1, 'q5': 0, 'q6': 1, 'q7': 1, 'q8': 0, 'q9': 1}, -7.0, 1]
-> [1 0 0 0 1 0 1 1 0 1] A=1 B=0 C=1 D=3 E=2 ok=True
-> [{'q0': 1, 'q1': 0, 'q2': 0, 'q3': 0, 'q4': 1, 'q5': 1, 'q6': 1, 'q7': 1, 'q8': 0, 'q9': 1}, -7.0, 1]
-> [1 0 0 0 1 1 1 1 0 1] A=1 B=0 C=3 D=3 E=2 ok=True
-> [{'q0': 1, 'q1': 0, 'q2': 0, 'q3': 1, 'q4': 1, 'q5': 0, 'q6': 0, 'q7': 0, 'q8': 1, 'q9': 1}, -7.0, 1]
-> [1 0 0 1 1 0 0 0 1 1] A=1 B=2 C=1 D=0 E=3 ok=True
-> CPU times: user 19.5 s, sys: 6.64 ms, total: 19.5 s
-> Wall time: 19.5 s
-
-変数 `H` を丹念に展開すると分かるが、量子ビットについて 4 次の項が現れており、HOBO 式になっている。ソルバに投入する前に QUBO へのリダクションをせずとも解けているのである。
 
 ## QAOA で解く
 
@@ -162,12 +25,14 @@ QAOA でも `Rzzz` ゲートなどを作ることで HOBO を直接扱えるが�
 
 ![](/images/dwd-qiskit-qaoa03/002.png =500x)
 
-今回、Colab 上で T4 を用いて計算を行いたい。やや計算が大きいものがあるので GPU シミュレーションを使いたいのだ。
+基本的には [blueqatでXYミキサーを用いた制約付きQAOA](https://qiita.com/ryuNagai/items/1836601f4d3c5ec9e336) と同じはずだが、今回は補助量子ビットを使わない方法を用いた。
+
+今回、後で最初の 5 頂点 4 色問題を解くことも想定して、GPU シミュレーションを行う。Colab 上で T4 を用いて計算を行いたい。
 
 必要なモジュールのインストール:
 
 ```sh
-pip install -qU qiskit qiskit[visualization] qiskit-aer-gpu
+pip install -qU qiskit qiskit[visualization] qiskit-aer-gpu tytan
 ```
 
 念のため重要なパッケージのバージョンを表示しておく。
@@ -175,27 +40,31 @@ pip install -qU qiskit qiskit[visualization] qiskit-aer-gpu
 ```sh
 %%bash
 
-pip list | egrep -e "(qiskit|hobotan)"
+pip list | egrep -e "(qiskit|tytan)"
 ```
 
-> hobotan                          0.0.8
 > qiskit                           1.1.1
 > qiskit-aer-gpu                   0.14.2
+> tytan                            0.0.28
 
-追加でモジュールを import する:
+モジュールを import する:
 
 ```python
+from __future__ import annotations
+
 import pprint
 import re
 import sys
-import time
 
 import numpy as np
 import scipy as sp
-import numpy.random as nr
 from scipy.optimize import minimize
 
 import matplotlib.pyplot as plt
+
+from tytan import (
+    symbols, symbols_list, symbols_nbit, sampler, Auto_array, Compile
+)
 
 from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector
@@ -209,7 +78,22 @@ from qiskit_aer.quantum_info import AerStatevector
 
 ### QUBO での定式化
 
-量子ビットとして 2 次元の $q_{v,i}$ を考える。$v$ は頂点の番号で、今回 0, 1, 2, 3 である。$i$ は色の番号で、こちらも今回は 0, 1, 2, 3 である。頂点 $v$ が色 $i$ で塗られる時に $q_{v,i} = 1$ となり、それ以外では $q_{v,i} = 0$ とする。
+参考資料として [tytan_tutorial](https://github.com/tytansdk/tytan_tutorial) の「初代基礎コース」の「tutorial04. グラフ分割問題、グラフカラーリング問題」を参考にする。
+
+バイナリ変数として 2 次元の $q_{v,i}$ を考える。$v$ は頂点の番号で、今回 0, 1, 2, 3 である。$i$ は色の番号で、こちらも今回は 0, 1, 2, 3 である。
+
+$$
+\begin{align*}
+q_{v,i} = \begin{cases}
+1, \quad \text{頂点} v \text{が色} i \text{で塗られる} \\
+0, \quad \text{otherwise}
+\end{cases}
+\end{align*}
+$$
+
+とする。
+
+**ワンホット制約項**
 
 同じ頂点 $v$ においては色はただ 1 つ決まる必要があるのでワンホット制約
 
@@ -219,7 +103,10 @@ $$
 \end{align*}
 $$
 
-を設定する。コードでは `HA` が対応する。
+を設定する。以下のコードでは `HA` が対応する。細かいテクニック類は Vignette & Clarity さんの記事 [21-12. 量子アニーリングのQUBOで設定可能な条件式まとめ（保存版）](https://vigne-cla.com/21-12/) が詳しい。
+
+**コスト項**
+
 辺 $(u, v)$ で接続された頂点同士が同じ色 $i$ で塗られることを禁止したいので、$q_{u,i} q_{v,i}$ にペナルティを設定したい。頂点の接続の集合 $E = {(u, v)}$ を考え以下のようなコスト
 
 $$
@@ -228,7 +115,7 @@ $$
 \end{align*}
 $$
 
-を設定する。コードでは `HB` が対応する。
+を設定する。以下のコードでは `HB` が対応する。
 
 ```python
 %%time
@@ -236,7 +123,7 @@ $$
 n_vertices = 4
 n_colors = 4
 
-# vertex (v=A, B, C, D), color (m=0, 1, 2, 3)
+# vertex (v=A, B, C, D), color (i=0, 1, 2, 3)
 q = symbols_list([n_vertices, n_colors], 'q{}_{}')
 
 # ワンホット制約
@@ -256,96 +143,76 @@ for u, v in E:
 
 [cuQuantum で遊んでみる (6) — 最大カット問題と QUBO と QAOA](/derwind/articles/dwd-cuquantum06) でも触れたが、この QUBO 式を $z_i = 1 - 2q_i$ という変数変換により、$z_i$ を用いたイジングハミルトニアンに置き換える必要がある。
 
-実装の詳細は割愛するが、hobotan の関数を流用しつつ以下のような変換関数を作成した:
+[Qiskit で遊んでみる (21) — QAOA でお絵描き](/derwind/articles/dwd-qiskit21) で使った関数を流用して以下のようなユーティリティを作る。
+
+**注意点（変更箇所）**:
+
+- 引用記事では `"q{}"` という名前でバイナリ変数を定義したが、今回は `"q{}_{}"` という 2 つのプレースホルダーを持つ形にしたのでここを拡張している。
+- `{("z1", "z3"): -2.5, ...}` みたいな辞書を返していた部分を、今回はインデックスだけにして `{(1, 3): -2.5, ...}` で返すようにした。
+
+いずれ汎用的にしたい・・。
 
 ```python
-import symengine
-from sympy import Rational
-from hobotan.compile import replace_function
+# calc keys for double sort
+def _calc_key(num_qubits: int, k: tuple[str] | tuple[str, str]) -> int:
+    if len(k) == 1:
+        ln = k[0]
+        return num_qubits * ln - 1
+    elif len(k) == 2:
+        ln, rn = k
+        return num_qubits * num_qubits * ln + num_qubits * rn
+    else:
+        raise ValueError(f"len(k) = {len(k)} must be one or two.")
 
 
-def get_hobo(H):
+def get_ising(
+    qubo: dict[tuple[str, str], float], n_vertices: int, n_colors: int
+) -> tuple[dict[tuple[str] | tuple[str, str], float], float]:
+    ising_dict: dict[tuple[int] | tuple[int, int], float] = {}
+    offset = 0.0
 
-    #式を展開して同類項をまとめる
-    expr = symengine.expand(H)
+    num_qubits = n_vertices * n_colors
 
-    #二乗項を一乗項に変換
-    expr = replace_function(expr, lambda e: isinstance(e, symengine.Pow) and e.exp == 2, lambda e, *args: e)
+    for k, v in qubo.items():
+        left, right = k
+        vertex, color = [int(v) for v in left[1:].split("_")]
+        ln = n_colors * vertex + color
+        vertex, color = [int(v) for v in right[1:].split("_")]
+        rn = n_colors * vertex + color
+        new_k: tuple[str] | tuple[str, str]
+        if rn < ln:
+            ln, rn = rn, ln
+        if ln == rn:
+            new_k = (ln,)
+            ising_dict.setdefault(new_k, 0.0)
+            ising_dict[new_k] += -v / 2
+            offset += v / 2
+        else:
+            new_k = (ln, rn)
+            ising_dict.setdefault(new_k, 0.0)
+            ising_dict[new_k] += v / 4
+            new_k = (ln,)
+            ising_dict.setdefault(new_k, 0.0)
+            ising_dict[new_k] += -v / 4
+            new_k = (rn,)
+            ising_dict.setdefault(new_k, 0.0)
+            ising_dict[new_k] += -v / 4
+            offset += v / 4
 
-    #最高字数を調べながらオフセットを記録
-    #項に分解
-    members = str(expr).split(' ')
-
-    #各項をチェック
-    offset = 0
-    ho = 0
-    for member in members:
-        #数字単体ならオフセット
-        try:
-            offset += float(member) #エラーなければ数字
-        except:
-            pass
-        #'*'で分解
-        texts = member.split('*')
-        #係数を取り除く
-        try:
-            texts[0] = re.sub(r'[()]', '', texts[0]) #'(5/2)'みたいなのも来る
-            float(Rational(texts[0])) #分数も対応 #エラーなければ係数あり
-            texts = texts[1:]
-        except:
-            pass
-
-        if len(texts) > ho:
-            ho = len(texts)
-    # print(ho)
-
-    #もう一度同類項をまとめる
-    expr = symengine.expand(expr)
-
-    coeff_dict = expr.as_coefficients_dict()
-
-    hobo = {}
-    for key, value in coeff_dict.items():
-        if key.is_Number:
-            continue
-        tmp = str(key).split('*')
-        hobo[tuple(sorted(tmp))] = float(value)
-
-    return hobo
-
-
-def hobo2ising(hobo: dict[tuple[str, ...], float]) -> dict[tuple[int, ...], float]:
-    expr = 0
-    for key, value in hobo.items():
-        term = value
-        for k in key:
-            # s = 1 - 2x <==> x = (1 - s) / 2
-            vertex, color = [int(v) for v in k[1:].split("_")]
-            term = term * (1 - symengine.symbols(str(n_colors * vertex + color))) / 2
-        expr += term
-    expr = symengine.expand(expr)
-
-    coeff_dict = expr.as_coefficients_dict()
-
-    ising = {}
-    for key, value in coeff_dict.items():
-        if key.is_Number:
-            continue
-        tmp = str(key).split('*')
-        new_key = tuple(sorted(int(k) for k in sorted(tmp)))
-        ising[new_key] = float(value)
-
-    return ising
+    ising_dict = {k: v for k, v in ising_dict.items() if not np.isclose(v, 0)}
+    ising_dict = dict(
+        sorted(ising_dict.items(), key=lambda k_v: _calc_key(num_qubits, k_v[0]))
+    )
+    return ising_dict, offset
 ```
 
-これを用いて QUBO をイジングハミルトニアンに変換する。直後に書く理由で、今回は `HA` は定義したもののこれは用いずに `HB` だけ変換する。4 頂点 4 色なので、$4 \times 4 = 16$ 個の量子ビットへの対応となる。`(0, 4): 0.25` などは、$0.25 z_0 z_4$ に対応する。
+これを用いて QUBO をイジング形式に変換する。直後に書く理由で、今回は（`HA` は定義したもののこれは用いずに）`HB` だけ変換する。4 頂点 4 色なので、$4 \times 4 = 16$ 個の量子ビットへの対応となる。`(0, 4): 0.25` などは、$0.25 z_0 z_4$ に対応する。以下、$-0.5 z_0 + 0.25 z_0 z_4 + 0.25 z_0 z_8 + \cdots$ のようなイジング形式が得られている。
 
 ```python
-hobo = get_hobo(HB)
-ising = hobo2ising(hobo)
+qubo, offset = Compile(HB).get_qubo()
+ising, ising_offset = get_ising(qubo, n_vertices, n_colors)
 pprint.pprint(ising)
 ```
-
 
 > {(0,): -0.5,
 >  (0, 4): 0.25,
@@ -385,11 +252,8 @@ pprint.pprint(ising)
 >  (15,): -0.5}
 
 
-ところで、通常は `H = HA + HB` が最小となるように最適化をするのだが、今回は、`HA` のワンホット制約が自動的に満たされるようにして `HB` だけの最適化に持ち込みたい。このためには XY-mixer というものが使える。c.f [arXiv:1904.09314 $XY$-mixers: analytical and numerical results for QAOA](https://arxiv.org/abs/1904.09314)
+さて、次に `HA` であるが、これはワンホット制約を満たすための項であった。QAOA の場合 $XY$ ミキサーというものを使うことでこの制約を満たすことができる。この辺は長くなるので、Appendix にて後述した。
 
-XY-mixer は大雑把には、2 量子ビットの場合だと $\frac{1}{\sqrt{2}} (\ket{01} + \ket{10})$ の状態を維持させるために用いられる。詳しい説明は [blueqatでXYミキサーを用いた制約付きQAOA](https://qiita.com/ryuNagai/items/1836601f4d3c5ec9e336) などにある。
-
-3 量子ビットの場合には $\frac{1}{\sqrt{3}} (\ket{001} + \ket{010} + \ket{100})$、4 量子ビットの場合には $\frac{1}{2} (\ket{0001} + \ket{0010} + \ket{0100} + \ket{1000})$ を維持できるのであればワンホット制約は自動的に満たされるのである。このような状態を Dicke 状態と呼ぶが、これらの状態を準備する方法が [arXiv:1904.07358 Deterministic Preparation of Dicke States](https://arxiv.org/abs/1904.07358) で知られている。
 
 ### Dicke 状態の作成
 
@@ -462,3 +326,110 @@ $$
 \frac{1}{2} (\ket{0001} + \ket{0010} + \ket{0100} + \ket{1000})
 \end{align*}
 $$
+
+# Appendix
+
+## QAOA
+
+QAOA（文献 [1]）を素朴に書こう。文献 [2] にあるような断熱定理に基礎を置いた「断熱的量子アルゴリズム」のアルゴリズムがあり、問題を記述するハミルトニアンの基底状態のエネルギーと固有状態を求めることができるようなものである。それはより厳密な時間発展を記述するために量子回路が深くなるという問題がある。これに対して、量子近似最適化アルゴリズム (QAOA) は「断熱的量子アルゴリズム」にインスパイアされた構造を持ちつつも効率をあげて近似解を求めるヒューリスティックなアルゴリズムとなる[^a]。
+“問題を記述するハミルトニアン” はある種の組み合わせ最適化問題から定式化され、これらを解くのに用いられるアルゴリズムとなる。
+
+[^a]: 但し「断熱的量子アルゴリズム」と「量子近似最適化アルゴリズム (QAOA)」とは、完全に互換性のあるアルゴリズムというわけでもないので、これについてはこれ以上は掘り下げない。
+
+文献 [3] が色々と詳しいので、以下ではこれを大いに参考にして概略を記載する。
+
+QAOA では 2 つのハミルトニアンとして、問題ハミルトニアン（または位相ハミルトニアン） $\hat{H}_P$ とミキシングハミルトニアン $\hat{H}_M$ を用いる。まず量子状態として $\hat{H}_M$ の適当な基底状態 $\ket{\psi_0}$ を用意する[^b]。
+
+[^b]: 難しい場合もあるようだが、正確に基底状態に設定していない場合には QAOA のパフォーマンスに影響が出る可能性が文献 [3] で示唆されている。
+
+$\ket{\psi (\beta, \gamma)} := U(\beta,\gamma) \ket{\psi_0}$ という状態を作る回路を組み立てることになる。ここで、パラメータ $\beta = (\beta_1,\cdots,\beta_p) \in \R^p$ と $\gamma = (\gamma_1,\cdots,\gamma_p) \in \R^p$ に対して $U(\beta, \gamma)$ は以下のようなものである[^c]:
+
+[^c]: 気持ち的には、「断熱的量子アルゴリズム」的に書いた場合の $$\hat{H}(t) = \left(1 - \frac{t}{T}\right) \hat{H}_M + \frac{t}{T} \hat{H}_P$$ の時間発展演算子 $\exp (-i t \hat{H}(t))$ の Trotter 分解のパラメータ付け版のような構造になっている。
+
+$$
+\begin{align*}
+U(\beta, \gamma) = \underbrace{\left( e^{-i \beta_p \hat{H}_M} e^{-i \gamma_p \hat{H}_P} \right) \left( e^{-i \beta_{p-1} \hat{H}_M} e^{-i \gamma_{p-1} \hat{H}_P} \right) \cdots \left( e^{-i \beta_1 \hat{H}_M} e^{-i \gamma_1 \hat{H}_P} \right)}_{p}
+\end{align*}
+$$
+
+この $U(\beta, \gamma)$ を用いて、期待値
+
+$$
+\begin{align*}
+f(\beta, \gamma) = \braket{\psi (\beta, \gamma) | \hat{H}_P | \psi (\beta, \gamma)}
+\end{align*}
+$$
+
+を考え、適当な古典オプティマイザ（COBYLA や Powell）で以下のように最適化を行う。
+
+$$
+\begin{align*}
+\beta_\text{opt}, \gamma_\text{opt} = \argmin_{\beta, \gamma} f(\beta, \gamma)
+\end{align*}
+$$
+
+この時、$\psi (\beta_\text{opt}, \gamma_\text{opt})$ は $\hat{H}_P$ の基底状態になっているというのが QAOA のアウトラインである。
+
+## ミキシングハミルトニアン
+
+ミキシングハミルトニアン $\hat{H}_M$ とは初期状態 $\ket{\psi_0}$ を基底状態に持つような使いやすいエルミート演算子ということになる。
+
+**$X$ ミキサー**
+
+QAOA の原典である文献 [1] では Pauli-$X$ ゲートを用いた、いわゆる「$X$ ミキサー」が導入された（文献 [1] Eq. (3)）。$X$ ゲートは量子計算のコンテキストでは
+
+$$
+\begin{align*}
+X = \begin{pmatrix}
+0 & 1 \\
+1 & 0
+\end{pmatrix}
+\end{align*}
+$$
+
+と書かれるものであり、簡単な計算で固有状態として $\ket{+} := \frac{1}{\sqrt{2}} (\ket{0} + \ket{1}) = H \ket{0}$ を持つことが分かる（文献 [1] Eq. (5)）。ここで $H$ はアダマールゲート
+
+$$
+\begin{align*}
+H = \frac{1}{\sqrt{2}} \begin{pmatrix}
+1 & 1 \\
+1 & -1
+\end{pmatrix}
+\end{align*}
+$$
+
+である。$X$ の時間発展演算子は $\exp (- i \frac{\theta}{2} X) =: RX (\theta)$ であり、いわゆる $RX$ で記述される（文献 [1] Eq. (4)）。
+
+このため、QAOA のチュートリアル等では、まず回路の冒頭で一様にアダマールゲート $H$ を適用し、途中で横断的に $RX(\beta_i)$ を差し込む形になる[^d]。
+
+[^d]: ところで計算すると分かるが、$X$ の固有値は $\{-1, 1\}$ であり、$-1$ に対応する固有ベクトルは $\ket{-} := \frac{1}{\sqrt{2}} (\ket{0} - \ket{1}) = ZH \ket{0}$ である。ここで、$Z$ は Pauli-$Z$ ゲート $$Z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}$$ である。これでは話がすっきりしないように感じられるかもしれないが、$\beta_i^\prime = -(2 \pi + \beta_i)$ とおくと、$RX(\beta_i^\prime) = -\exp (- i \frac{\beta_i}{2} (-X)) = -R(-X)(\beta_i)$ という関係が成り立つことが分かる。$p = 2 p^\prime$ の時には $(-1)^{p} = 1$ に注意すると、$$U(\beta, \gamma) = \underbrace{\left( e^{-i \beta_p^\prime (-X)} e^{-i \gamma_p \hat{H}_P} \right) \left( e^{-i \beta_{p-1}^\prime (-X)} e^{-i \gamma_{p-1} \hat{H}_P} \right) \cdots \left( e^{-i \beta_1^\prime (-X)} e^{-i \gamma_1 \hat{H}_P} \right)}_{p=2p^\prime}$$ と書けるので、“$-X$ ミキサー” を使っていると考えてもそれほど悪くはないであろう。$\ket{+}$ は確かに $-X$ の基底状態であるのだから。
+
+**$XY$ ミキサー**
+
+ミキシングハミルトニアンは $X$ ミキサー以外にも提案されており、$XY$ ミキサー（文献 [4]）や $RS$ ミキサーなどが提案されている。文献 [3] に加え、文献 [5] も参考になると思われる。
+
+$XY$ ミキサーは大雑把には、2 量子ビットの場合だと $\frac{1}{\sqrt{2}} (\ket{01} + \ket{10})$ の状態を維持させるために用いられる。詳しい説明は [blueqatでXYミキサーを用いた制約付きQAOA](https://qiita.com/ryuNagai/items/1836601f4d3c5ec9e336) などにある。
+
+文献 [3] では $XY$ ミキサーにも何種類かあることが書かれており、ring-$XY$ ミキサーや complete-$XY$ ミキサーがあるということになる。今回の記事では complete-$XY$ ミキサーを用いた。complete-$XY$ ミキサーとは
+
+$$
+\hat{H}_{S_\text{complete}}^{XY} = \sum_{(i,j) \in S_\text{complete}} (X_i X_j + Y_i Y_j), \\
+\text{where} \ \ S_\text{complete} = \left\{ (i,j) | i < j; i, j \in \{1, \ldots, N\} \right\}
+$$
+
+である。ここで $Y$ は Pauli-$Y$ ゲートである。
+
+さて、2 量子ビットの $\frac{1}{\sqrt{2}} (\ket{01} + \ket{10})$ に加え、3 量子ビットの場合には $\frac{1}{\sqrt{3}} (\ket{001} + \ket{010} + \ket{100})$、4 量子ビットの場合には $\frac{1}{2} (\ket{0001} + \ket{0010} + \ket{0100} + \ket{1000})$ を維持できるのであればワンホット制約は自動的に満たされるのである。このような状態を「Hamming 重み 1 の Dicke 状態」と呼ぶが、これらの状態を準備する方法が文献 [6] で知られている。簡単には論文の Figure 2 を実装すれば良いということになる。
+
+状況を一言で書くと、「complete-$XY$ ミキサーは Hamming 重み 1 の Dicke 状態を固有状態に持つ」となる[^e]。
+
+[^e]: 実際には、今回も complete-$XY$ ミキサーの基底状態というよりは最大固有値に対応する固有状態なのだが、パラメータをいじることで実質問題ないと思われる。
+
+## 参考文献
+
+[1] E. Farhi, J. Goldstone, and S. Gutmann, A quantum approximate optimization algorithm, Preprint at [arXiv:1411.4028](https://arxiv.org/abs/1411.4028)
+[2] Edward Farhi, Jeffrey Goldstone, Sam Gutmann, Michael Sipser. Quantum computation by adiabatic evolution, 2000. [arXiv:quant-ph/0001106](https://arxiv.org/abs/quant-ph/0001106).
+[3] Zichang He, Ruslan Shaydulin, Shouvanik Chakrabarti, Dylan Herman, Changhao Li, Yue Sun, Marco Pistoia. Alignment between Initial State and Mixer Improves QAOA Performance for Constrained Optimization, Preprint at [arXiv:2305.03857](https://arxiv.org/abs/2305.03857)
+[4] Zhihui Wang, Nicholas C. Rubin, Jason M. Dominy, Eleanor G. Rieffel. $XY$-mixers: analytical and numerical results for QAOA, Preprint at [arXiv:1904.09314](https://arxiv.org/abs/1904.09314)
+[5] Wenyang Qian, Robert A. M. Basili, Mary Eshaghian-Wilner, Ashfaq Khokhar, Glenn Luecke, James P. Vary. Comparative study of variations in quantum approximate optimization algorithms for the Traveling Salesman Problem, Preprint at [arXiv:2307.07243](https://arxiv.org/abs/2307.07243)
+[6] Andreas Bärtschi, Stephan Eidenbenz. Deterministic Preparation of Dicke States, Preprint at [arXiv:1904.07358](https://arxiv.org/abs/1904.07358)
