@@ -430,7 +430,7 @@ ansatz = ansatz.compose(qaoa_ansatz)
 ansatz.draw("mpl", style="clifford", scale=0.3, fold=60)
 ```
 
-![](/images/dwd-qiskit-qaoa03/004.png)
+![](/images/dwd-qiskit-qaoa03/004a.png)
 
 `n_reps = 20` としたので 2 回目の繰り返しの途中までしか画像キャプチャできていないが、このような絵になる。左上に Dicke 状態 $\ket{D_1^4}$ が 4 量子ビットずつで 4 個見える。続いてイジングハミルトニアンの時間発展が $RZZ$ や $RZ$ ゲートを用いて階段状に連なっている。左下にうつって、complete-$XY$ ミキサーの時間発展が密集して、2 周目のブロックにうつっている。
 
@@ -539,7 +539,7 @@ plt.plot(x, losses, color="blue")
 plt.show()
 ```
 
-![](/images/dwd-qiskit-qaoa03/005.png =500x)
+![](/images/dwd-qiskit-qaoa03/005a.png =500x)
 
 もう少し下がりそうではあるが、今回はこれくらいで問題は解けた。
 
@@ -619,7 +619,7 @@ print(f"OK: {ok_count}, NG: {ng_count}")
 
 エネルギーの推移は以下のような感じであった。
 
-![](/images/dwd-qiskit-qaoa03/006.png =500x)
+![](/images/dwd-qiskit-qaoa03/006a.png =500x)
 
 サンプリング結果は以下である。
 
