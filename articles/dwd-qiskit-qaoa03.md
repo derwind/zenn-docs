@@ -3,7 +3,7 @@ title: "QAOA を眺めてみる (3) ― グラフカラーリング問題と QAO
 emoji: "🪐"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Qiskit", "Python", "QUBO"]
-published: false
+published: true
 ---
 
 # 目的
