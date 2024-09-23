@@ -105,7 +105,7 @@ $$
 $$
 \begin{align*}
 &\ \left\|\sum_{m=0}^\infty \frac{1}{m!} (X+Y)^m - \left(\sum_{m=0}^\infty \frac{1}{m!} X^m\right) \left(\sum_{m=0}^\infty \frac{1}{m!} Y^m\right) \right\| \\
-\leq&\ \frac{1}{n^2} \cdot \frac{1}{2} \|BA-AB\| + \frac{1}{n^3} \left\{\exp( \|X+Y\|) + \exp \|X\| \exp \|Y\| \right\} = \mathcal{O}(1/n^2)
+\leq&\ \frac{1}{n^2} \cdot \frac{1}{2} \|BA-AB\| + \frac{1}{n^3} \left\{\exp( \|A+B\|) + \exp \|A\| \exp \|B\| \right\} = \mathcal{O}(1/n^2)
 \end{align*}
 $$
 
